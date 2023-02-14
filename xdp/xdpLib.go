@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/dropbox/goebpf"
 	"os/exec"
+	"sync"
 	"xdpEngine/utils"
 )
 
@@ -15,9 +16,11 @@ var (
 	EBPF_MAP_BLACK_IP   string = "black_ip"
 	XDP_PROGRAM_NAME    string = "firewall"
 	DEFAULT_IFACE       string = "ens33"
+
+	IfaceXdpDict map[string]*IfaceXdpObj // 多网口下存储策略
 )
 
-type XdpObj struct {
+type IfaceXdpObj struct {
 	Iface string
 
 	WhitePortMap    goebpf.Map     // port白名单
@@ -31,11 +34,11 @@ type XdpObj struct {
 	WhiteIpList   []string // ip白名单
 	BlackIpList   []string // ip黑名单
 
-	ctx    context.Context    // 上下文
-	cancel context.CancelFunc // 上下文信号
-}
+	Ctx    context.Context    // 上下文
+	Cancel context.CancelFunc // 上下文信号
 
-var DictXdp = make(map[string]XdpObj)
+	Lock sync.RWMutex
+}
 
 /*
 	InitEBpfMap:
@@ -117,7 +120,8 @@ func InitEBpfMap() {
 	//		logger.Println("xdp.Detach success")
 	//	}
 	//}()
-	DictXdp[DEFAULT_IFACE] = XdpObj{
+
+	IfaceXdpDict[DEFAULT_IFACE] = &IfaceXdpObj{
 		Iface:           DEFAULT_IFACE,
 		WhitePortMap:    mapWhitePort,
 		BlackPortMap:    mapBlackPort,
@@ -128,8 +132,8 @@ func InitEBpfMap() {
 		BlackPortList:   []int{},
 		WhiteIpList:     []string{},
 		BlackIpList:     []string{},
-		ctx:             ctx,
-		cancel:          cancel,
+		Ctx:             ctx,
+		Cancel:          cancel,
 	}
 }
 
@@ -167,10 +171,10 @@ func DetachRestXdp() {
 
 // DetachIfaceXdp 卸载已挂在的xdp程序
 func DetachIfaceXdp() {
-	for Iface, value := range DictXdp {
+	for Iface, value := range IfaceXdpDict {
 		logger.Printf("[%s]XDP程序正在卸载...", Iface)
 		_ = value.FirewallProgram.Detach()
-		value.cancel()
+		value.Cancel()
 		logger.Printf("[%s]XDP程序卸载完成", Iface)
 	}
 }

@@ -116,18 +116,18 @@ int firewall(struct xdp_md *ctx)
             src_port = GET_PORT(tcp->source);
             dst_port = GET_PORT(tcp->dest);
         }
-        bpfprint("[ IP ] src: %d, dst: %d", ip->saddr, ip->daddr);
-        bpfprint("[Port] src: %d, dst: %d", src_port, dst_port);
+        bpfprint("[ IP ] src: %u, dst: %u", ip->saddr, ip->daddr);
+        bpfprint("[Port] src: %u, dst: %u", src_port, dst_port);
 
         // Port 白名单
-        int *lookup_port_white = bpf_map_lookup_elem(&white_port, &src_port);
+        int *lookup_port_white = bpf_map_lookup_elem(&white_port, &dst_port);
         if(lookup_port_white){
             bpfprint("[!] Hitted! port_white...");
             return XDP_PASS;
         }
 
         // IP 白名单
-        int *lookup_ip_white = bpf_map_lookup_elem(&white_ip, &ip->saddr);
+        int *lookup_ip_white = bpf_map_lookup_elem(&white_ip, &ip->daddr);
         if(lookup_ip_white){
             bpfprint("[!] Hitted! ip_white...");
             return XDP_PASS;

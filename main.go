@@ -9,10 +9,9 @@ import (
 
 func main() {
 	systemConfig.PrintBanner()
-	xdp.InitEBpfMap()
-	go xdp.ListenExit()
+	xdp.InitEBpfMap()   // 获取ebpf maps
+	go xdp.ListenExit() // 监听退出信号
 	engine := gin.Default()
-	// 获取ebpf maps
 
 	routers.InitRouters(engine)
 

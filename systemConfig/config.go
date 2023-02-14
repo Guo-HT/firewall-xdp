@@ -10,6 +10,7 @@ import (
 
 var (
 	Logger      *log.Logger
+	Errlog      *log.Logger
 	CtrlC       chan os.Signal
 	LogFileName string = "xdpEngine.log"
 )
@@ -27,7 +28,8 @@ func LogInit() {
 	if err != nil {
 		log.Fatalln("Failed to open error log file:", err)
 	}
-	Logger = log.New(io.MultiWriter(file, os.Stdout), "xdpEngine: ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
+	Logger = log.New(io.MultiWriter(file, os.Stdout), "[INFO] ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
+	Errlog = log.New(io.MultiWriter(file, os.Stdout), "[ERROR] ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
 }
 
 // ListenExit 配置退出信号监听

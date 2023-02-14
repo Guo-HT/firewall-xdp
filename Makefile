@@ -8,7 +8,7 @@ CLANG := clang
 CLANG_INCLUDE := -I../../..
 
 GO_SOURCE := main.go
-GO_BINARY := main
+GO_BINARY := xdpEngine
 
 EBPF_SOURCE := ebpf_prog/my_xdp_dropbox.c
 EBPF_BINARY := ebpf_prog/my_xdp.elf
