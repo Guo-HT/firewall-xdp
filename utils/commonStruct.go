@@ -16,8 +16,8 @@ type BlackIpStruct struct {
 }
 
 type BlackPortStruct struct {
-	BlackPortList []string `json:"blackPortList,omitempty"`
-	Iface         string   `json:"iface,omitempty"`
+	BlackPortList []int  `json:"blackPortList,omitempty"`
+	Iface         string `json:"iface,omitempty"`
 }
 
 type IfaceStruct struct {

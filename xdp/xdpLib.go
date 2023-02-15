@@ -9,13 +9,14 @@ import (
 )
 
 var (
-	XDP_FILE            string = "./ebpf_prog/my_xdp.elf"
-	EBPF_MAP_WHITE_PORT string = "white_port"
-	EBPF_MAP_BLACK_PORT string = "black_port"
-	EBPF_MAP_WHITE_IP   string = "white_ip"
-	EBPF_MAP_BLACK_IP   string = "black_ip"
-	XDP_PROGRAM_NAME    string = "firewall"
-	DEFAULT_IFACE       string = "ens33"
+	XDP_FILE                 string = "./ebpf_prog/my_xdp.elf"
+	EBPF_MAP_WHITE_PORT      string = "white_port"
+	EBPF_MAP_BLACK_PORT      string = "black_port"
+	EBPF_MAP_WHITE_IP        string = "white_ip"
+	EBPF_MAP_BLACK_IP        string = "black_ip"
+	EBPF_MAP_FUNCTION_SWITCH string = "function_switch"
+	XDP_PROGRAM_NAME         string = "firewall"
+	DEFAULT_IFACE            string = "ens33"
 
 	IfaceXdpDict map[string]*IfaceXdpObj // 多网口下存储策略
 )
@@ -23,11 +24,12 @@ var (
 type IfaceXdpObj struct {
 	Iface string
 
-	WhitePortMap    goebpf.Map     // port白名单
-	BlackPortMap    goebpf.Map     // port黑名单
-	WhiteIpMap      goebpf.Map     // ip白名单
-	BlackIpMap      goebpf.Map     // ip黑名单
-	FirewallProgram goebpf.Program // xdp程序
+	WhitePortMap      goebpf.Map     // port白名单
+	BlackPortMap      goebpf.Map     // port黑名单
+	WhiteIpMap        goebpf.Map     // ip白名单
+	BlackIpMap        goebpf.Map     // ip黑名单
+	FunctionSwitchMap goebpf.Map     // ip黑名单
+	FirewallProgram   goebpf.Program // xdp程序
 
 	WhitePortList []int    // port白名单
 	BlackPortList []int    // port黑名单
@@ -56,30 +58,37 @@ func InitEBpfMap() {
 	// 获取port白名单map
 	mapWhitePort := bpf.GetMapByName(EBPF_MAP_WHITE_PORT)
 	if mapWhitePort == nil {
-		logger.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_WHITE_PORT)
+		errlog.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_WHITE_PORT)
 	} else {
 		logger.Printf("Get Map '%s' success\n", EBPF_MAP_WHITE_PORT)
 	}
 	// 获取port黑名单map
 	mapBlackPort := bpf.GetMapByName(EBPF_MAP_BLACK_PORT)
 	if mapBlackPort == nil {
-		logger.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_BLACK_PORT)
+		errlog.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_BLACK_PORT)
 	} else {
 		logger.Printf("Get Map '%s' success\n", EBPF_MAP_BLACK_PORT)
 	}
 	// 获取ip白名单map
 	mapWhiteIp := bpf.GetMapByName(EBPF_MAP_WHITE_IP)
 	if mapWhiteIp == nil {
-		logger.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_WHITE_IP)
+		errlog.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_WHITE_IP)
 	} else {
 		logger.Printf("Get Map '%s' success\n", EBPF_MAP_WHITE_IP)
 	}
-	// 获取ip黑名单ip
+	// 获取ip黑名单map
 	mapBlackIp := bpf.GetMapByName(EBPF_MAP_BLACK_IP)
 	if mapBlackIp == nil {
-		logger.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_BLACK_IP)
+		errlog.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_BLACK_IP)
 	} else {
 		logger.Printf("Get Map '%s' success\n", EBPF_MAP_BLACK_IP)
+	}
+	// 获取功能开关map
+	mapFunctionSwitch := bpf.GetMapByName(EBPF_MAP_FUNCTION_SWITCH)
+	if mapFunctionSwitch == nil {
+		errlog.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_FUNCTION_SWITCH)
+	} else {
+		logger.Printf("Get Map '%s' success\n", EBPF_MAP_FUNCTION_SWITCH)
 	}
 
 	// Program name matches function name in xdp.c:

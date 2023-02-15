@@ -19,3 +19,24 @@ func IsIntInList(target int, list []int) (result bool) {
 	}
 	return false
 }
+
+// DeletePortList 删除母列表中的子列表
+func DeletePortList(rawData, deleteData []int) (resultData []int) {
+	for _, eachData := range deleteData {
+		index := GetPortListIndex(eachData, rawData)
+		if index >= 0 {
+			rawData = append(rawData[:index], rawData[index+1:]...)
+		}
+	}
+	return rawData
+}
+
+// GetPortListIndex 获取元素在列表中的索引
+func GetPortListIndex(target int, rawData []int) (index int) {
+	for idx, each := range rawData {
+		if each == target {
+			return idx
+		}
+	}
+	return -1
+}

@@ -38,21 +38,32 @@ BPF_MAP_ADD(black_port);
 
 // ip 白名单
 BPF_MAP_DEF(white_ip) = {
-	.map_type    = BPF_MAP_TYPE_HASH,
-	.key_size    = sizeof(__u32),
+	.map_type    = BPF_MAP_TYPE_LPM_TRIE,
+	.key_size    = sizeof(__u64),
 	.value_size  = sizeof(__u32),
 	.max_entries = MAX_SIZE,
+	.map_flags   = 1,
 };
 BPF_MAP_ADD(white_ip);
 
 // ip 黑名单
 BPF_MAP_DEF(black_ip) = {
+	.map_type    = BPF_MAP_TYPE_LPM_TRIE,
+	.key_size    = sizeof(__u64),
+	.value_size  = sizeof(__u32),
+	.max_entries = MAX_SIZE,
+	.map_flags   = 1,
+};
+BPF_MAP_ADD(black_ip);
+
+// 功能开关map
+BPF_MAP_DEF(function_switch) = {
 	.map_type    = BPF_MAP_TYPE_HASH,
 	.key_size    = sizeof(__u32),
 	.value_size  = sizeof(__u32),
 	.max_entries = MAX_SIZE,
 };
-BPF_MAP_ADD(black_ip);
+BPF_MAP_ADD(function_switch);
 
 SEC("xdp")
 int firewall(struct xdp_md *ctx)
@@ -68,6 +79,12 @@ int firewall(struct xdp_md *ctx)
     int is_udp = 0;
     int src_port = 0;
     int dst_port = 0;
+
+    struct {
+        __u32 prefixlen;
+        __u32 saddr;
+    } key;
+    key.prefixlen = 32;
 
     if ((void *)eth + sizeof(*eth) <= data_end)
     {
@@ -119,19 +136,48 @@ int firewall(struct xdp_md *ctx)
         bpfprint("[ IP ] src: %u, dst: %u", ip->saddr, ip->daddr);
         bpfprint("[Port] src: %u, dst: %u", src_port, dst_port);
 
-        // Port 白名单
+        // Port 白名单  限制目的端口
         int *lookup_port_white = bpf_map_lookup_elem(&white_port, &dst_port);
         if(lookup_port_white){
-            bpfprint("[!] Hitted! port_white...");
+            bpfprint("[!] Hitted! port White...");
             return XDP_PASS;
         }
 
         // IP 白名单
-        int *lookup_ip_white = bpf_map_lookup_elem(&white_ip, &ip->daddr);
+        key.saddr = ip->saddr;  // 限制源ip
+        int *lookup_ip_white = bpf_map_lookup_elem(&white_ip, &key);
         if(lookup_ip_white){
-            bpfprint("[!] Hitted! ip_white...");
+            bpfprint("[!] Hitted! ip White...");
             return XDP_PASS;
         }
+
+        // Port 黑名单  限制目的端口
+        int *lookup_port_black = bpf_map_lookup_elem(&black_port, &dst_port);
+        if(lookup_port_black){
+            bpfprint("[!] Hitted! port Black...");
+            return XDP_PASS;
+        }
+
+        // IP 白名单
+        key.saddr = ip->saddr;  // 限制源ip
+        int *lookup_ip_black = bpf_map_lookup_elem(&black_ip, &key);
+        if(lookup_ip_black){
+            bpfprint("[!] Hitted! ip Black...");
+            return XDP_PASS;
+        }
+
+        // Lookup SRC IP in blacklisted IPs
+//        __u64 *rule_idx = bpf_map_lookup_elem(&blacklist, &key);
+//        if (rule_idx) {
+//            // Matched, increase match counter for matched "rule"
+//            __u32 index = *(__u32*)rule_idx;  // make verifier happy
+//            __u64 *counter = bpf_map_lookup_elem(&matches, &index);
+//            if (counter) {
+//                (*counter)++;
+//            }
+//            return XDP_PASS;
+//        }
+
     }
 
 
