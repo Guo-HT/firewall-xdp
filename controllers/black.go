@@ -8,6 +8,9 @@ import (
 	"xdpEngine/xdp"
 )
 
+// ******************** Port 操作 **************************
+
+// GetBlackPort 获取Port黑名单
 func GetBlackPort(c *gin.Context) {
 	defer func() {
 		if e := recover(); e != nil {
@@ -40,10 +43,7 @@ func GetBlackPort(c *gin.Context) {
 	return
 }
 
-func GetBlackIP(c *gin.Context) {
-
-}
-
+// SetBlackPort 配置Port黑名单
 func SetBlackPort(c *gin.Context) {
 	defer func() {
 		if e := recover(); e != nil {
@@ -89,10 +89,7 @@ func SetBlackPort(c *gin.Context) {
 	}
 }
 
-func SetBlackIP(c *gin.Context) {
-
-}
-
+// DelBlackPort 删除Port黑名单
 func DelBlackPort(c *gin.Context) {
 	defer func() {
 		if e := recover(); e != nil {
@@ -139,6 +136,124 @@ func DelBlackPort(c *gin.Context) {
 	}
 }
 
-func DelBlackIP(c *gin.Context) {
+// ********************* IP 操作 ***************************
 
+// GetBlackIP 删除IP黑名单
+func GetBlackIP(c *gin.Context) {
+	defer func() {
+		if e := recover(); e != nil {
+			errlog.Printf("GetBlackIP: %s \n %s", e, debug.Stack())
+			c.JSON(http.StatusOK, gin.H{
+				"code": 500,
+				"msg":  "服务器内部错误",
+				"data": []string{},
+			})
+		}
+	}()
+	iface := c.Query("iface")
+	blackIpList, err := xdp.GetAllBlackIpMap(iface)
+	if err != nil {
+		errlog.Println("IP黑名单获取失败,", err)
+		c.JSON(http.StatusOK, gin.H{
+			"code": 400,
+			"msg":  "IP黑名单获取失败",
+			"data": []string{},
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "IP黑名单获取成功",
+		"data": blackIpList,
+	})
+	return
+}
+
+// SetBlackIP 配置IP黑名单
+func SetBlackIP(c *gin.Context) {
+	defer func() {
+		if e := recover(); e != nil {
+			errlog.Printf("SetBlackIP: %s \n %s", e, debug.Stack())
+			c.JSON(http.StatusOK, gin.H{
+				"code": 500,
+				"msg":  "服务器内部错误",
+				"data": []string{},
+			})
+		}
+	}()
+	var json utils.BlackIpStruct
+	if err := c.ShouldBindJSON(&json); err != nil || !utils.IsIpListRight(json.BlackIpList) {
+		errlog.Println("SetBlackIP: 请求参数错误")
+		c.JSON(http.StatusOK, gin.H{
+			"code": 400,
+			"msg":  "请求参数错误",
+			"data": []string{},
+		})
+		return
+	} else {
+		xdp.IfaceXdpDict[json.Iface].Lock.Lock()
+		xdp.IfaceXdpDict[json.Iface].BlackIpList = utils.AppendIPListDeduplicate(xdp.IfaceXdpDict[json.Iface].BlackIpList, json.BlackIpList)
+		xdp.IfaceXdpDict[json.Iface].Lock.Unlock()
+		err := xdp.InsertBlackIpMap(xdp.IfaceXdpDict[json.Iface].BlackIpList, json.Iface)
+		if err != nil {
+			errlog.Println("InsertBlackIpMap,", err.Error())
+			c.JSON(http.StatusOK, gin.H{
+				"code": 400,
+				"msg":  "IP黑名单添加失败",
+				"data": []string{},
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code": 200,
+			"msg":  "IP黑名单添加成功",
+			"data": xdp.IfaceXdpDict[json.Iface].BlackIpList,
+		})
+		return
+	}
+}
+
+// DelBlackIP 获取IP黑名单
+func DelBlackIP(c *gin.Context) {
+	defer func() {
+		if e := recover(); e != nil {
+			errlog.Printf("DelBlackIP: %s \n %s", e, debug.Stack())
+			c.JSON(http.StatusOK, gin.H{
+				"code": 500,
+				"msg":  "服务器内部错误",
+				"data": []string{},
+			})
+		}
+	}()
+
+	var json utils.BlackIpStruct
+	if err := c.ShouldBindJSON(&json); err != nil || !utils.IsIpListRight(json.BlackIpList) {
+		errlog.Println("DelBlackIP: 请求参数错误")
+		c.JSON(http.StatusOK, gin.H{
+			"code": 400,
+			"msg":  "请求参数错误",
+			"data": []string{},
+		})
+		return
+	} else {
+		xdp.IfaceXdpDict[json.Iface].Lock.Lock()
+		xdp.IfaceXdpDict[json.Iface].BlackIpList = utils.DeleteIpList(xdp.IfaceXdpDict[json.Iface].BlackIpList, json.BlackIpList)
+		xdp.IfaceXdpDict[json.Iface].Lock.Unlock()
+
+		err := xdp.DeleteBlackIpMap(json.BlackIpList, json.Iface)
+		if err != nil {
+			errlog.Println("DeleteBlackIpMap error: ", err.Error())
+			c.JSON(http.StatusOK, gin.H{
+				"code": 400,
+				"msg":  "IP黑名单删除失败",
+				"data": []int{},
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code": 200,
+			"msg":  "IP黑名单删除成功",
+			"data": xdp.IfaceXdpDict[json.Iface].BlackIpList,
+		})
+	}
 }

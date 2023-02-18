@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
 )
 
 var (
@@ -35,22 +36,30 @@ func LogInit() {
 // ListenExit 配置退出信号监听
 func ListenExit() {
 	CtrlC = make(chan os.Signal, 1)
-	signal.Notify(CtrlC, os.Interrupt, os.Kill)
+	signal.Notify(CtrlC, os.Interrupt, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
 }
 
 // PrintBanner 输出程序Banner
 func PrintBanner() {
 	fmt.Println(`===================================================================================================`)
 	fmt.Println(``)
-	fmt.Println(`__    __   _____      _____      _______    ___      _      ____      __    ___      _    _______  `)
-	fmt.Println(`\ \  / /  |  __  \   |  __  \   |  _____|  |   \    | |   /  ___ \   |  |  |   \    | |  |  _____| `)
-	fmt.Println(` \ \/ /   | |  \  |  | |  \  |  | |        | |\ \   | |  |  /   \ |  |  |  | |\ \   | |  | |       `)
-	fmt.Println(`  \  /    | |   | |  | |__/  |  | |_____   | | \ \  | |  | |   ___   |  |  | | \ \  | |  | |_____  `)
-	fmt.Println(`  /  \    | |   | |  |  ___ /   |  _____|  | |  \ \ | |  | |  |__ |  |  |  | |  \ \ | |  |  _____| `)
-	fmt.Println(` / /\ \   | |__/  |  | |        | |_____   | |   \ \| |  |  \___/ |  |  |  | |   \ \| |  | |_____  `)
-	fmt.Println(`/_/  \_\  |______/   |_|        |_______|  |_|    \___|   \______/   |__|  |_|    \___|  |_______| `)
+	fmt.Println(`          __     ____          _`)
+	fmt.Println(` __ _____/ /__  / __/__  ___ _(_)__  ___`)
+	fmt.Println(` \ \ / _  / _ \/ _// _ \/ _ ·/ / _ \/ -_)`)
+	fmt.Println(`/_\_\\_,_/ .__/___/_//_/\_, /_/_//_/\__/`)
+	fmt.Println(`        /_/            /___/`)
 	fmt.Println(``)
 	fmt.Println(`===================================================================================================`)
 	fmt.Println(`[-] An XDP-based firewall`)
 	fmt.Println(``)
 }
+
+/*
+
+          __     ____          _
+ __ _____/ /__  / __/__  ___ _(_)__  ___
+ \ \ / _  / _ \/ _// _ \/ _ ·/ / _ \/ -_)
+/_\_\\_,_/ .__/___/_//_/\_, /_/_//_/\__/
+        /_/            /___/
+
+*/

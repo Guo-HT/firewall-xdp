@@ -60,35 +60,35 @@ func InitEBpfMap() {
 	if mapWhitePort == nil {
 		errlog.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_WHITE_PORT)
 	} else {
-		logger.Printf("Get Map '%s' success\n", EBPF_MAP_WHITE_PORT)
+		//logger.Printf("Get Map '%s' success\n", EBPF_MAP_WHITE_PORT)
 	}
 	// 获取port黑名单map
 	mapBlackPort := bpf.GetMapByName(EBPF_MAP_BLACK_PORT)
 	if mapBlackPort == nil {
 		errlog.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_BLACK_PORT)
 	} else {
-		logger.Printf("Get Map '%s' success\n", EBPF_MAP_BLACK_PORT)
+		//logger.Printf("Get Map '%s' success\n", EBPF_MAP_BLACK_PORT)
 	}
 	// 获取ip白名单map
 	mapWhiteIp := bpf.GetMapByName(EBPF_MAP_WHITE_IP)
 	if mapWhiteIp == nil {
 		errlog.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_WHITE_IP)
 	} else {
-		logger.Printf("Get Map '%s' success\n", EBPF_MAP_WHITE_IP)
+		//logger.Printf("Get Map '%s' success\n", EBPF_MAP_WHITE_IP)
 	}
 	// 获取ip黑名单map
 	mapBlackIp := bpf.GetMapByName(EBPF_MAP_BLACK_IP)
 	if mapBlackIp == nil {
 		errlog.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_BLACK_IP)
 	} else {
-		logger.Printf("Get Map '%s' success\n", EBPF_MAP_BLACK_IP)
+		//logger.Printf("Get Map '%s' success\n", EBPF_MAP_BLACK_IP)
 	}
 	// 获取功能开关map
 	mapFunctionSwitch := bpf.GetMapByName(EBPF_MAP_FUNCTION_SWITCH)
 	if mapFunctionSwitch == nil {
 		errlog.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_FUNCTION_SWITCH)
 	} else {
-		logger.Printf("Get Map '%s' success\n", EBPF_MAP_FUNCTION_SWITCH)
+		//logger.Printf("Get Map '%s' success\n", EBPF_MAP_FUNCTION_SWITCH)
 	}
 
 	// Program name matches function name in xdp.c:
@@ -97,7 +97,7 @@ func InitEBpfMap() {
 	if xdp == nil {
 		logger.Fatalf("Program '%s' not found\n", XDP_PROGRAM_NAME)
 	} else {
-		logger.Printf("Get Process '%s' success\n", XDP_PROGRAM_NAME)
+		//logger.Printf("Get Process '%s' success\n", XDP_PROGRAM_NAME)
 	}
 
 	// Load XDP program into kernel
@@ -105,7 +105,7 @@ func InitEBpfMap() {
 	if err != nil {
 		logger.Fatalf("xdp.Load(): %v\n", err)
 	} else {
-		logger.Println("xdp.Load() success")
+		//logger.Println("xdp.Load() success")
 	}
 
 	utils.UpIfaceState(DEFAULT_IFACE)
@@ -115,7 +115,7 @@ func InitEBpfMap() {
 	if err != nil {
 		logger.Fatalf("xdp.Attach(): %v\n", err)
 	} else {
-		logger.Println("xdp.Attach() success")
+		//logger.Println("xdp.Attach() success")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -131,18 +131,19 @@ func InitEBpfMap() {
 	//}()
 
 	IfaceXdpDict[DEFAULT_IFACE] = &IfaceXdpObj{
-		Iface:           DEFAULT_IFACE,
-		WhitePortMap:    mapWhitePort,
-		BlackPortMap:    mapBlackPort,
-		WhiteIpMap:      mapWhiteIp,
-		BlackIpMap:      mapBlackIp,
-		FirewallProgram: xdp,
-		WhitePortList:   []int{},
-		BlackPortList:   []int{},
-		WhiteIpList:     []string{},
-		BlackIpList:     []string{},
-		Ctx:             ctx,
-		Cancel:          cancel,
+		Iface:             DEFAULT_IFACE,
+		WhitePortMap:      mapWhitePort,
+		BlackPortMap:      mapBlackPort,
+		WhiteIpMap:        mapWhiteIp,
+		BlackIpMap:        mapBlackIp,
+		FunctionSwitchMap: mapFunctionSwitch,
+		FirewallProgram:   xdp,
+		WhitePortList:     []int{},
+		BlackPortList:     []int{},
+		WhiteIpList:       []string{},
+		BlackIpList:       []string{},
+		Ctx:               ctx,
+		Cancel:            cancel,
 	}
 }
 
@@ -182,6 +183,11 @@ func DetachRestXdp() {
 func DetachIfaceXdp() {
 	for Iface, value := range IfaceXdpDict {
 		logger.Printf("[%s]XDP程序正在卸载...", Iface)
+		_ = value.WhitePortMap.Close()
+		_ = value.BlackPortMap.Close()
+		_ = value.WhiteIpMap.Close()
+		_ = value.BlackIpMap.Close()
+		_ = value.FunctionSwitchMap.Close()
 		_ = value.FirewallProgram.Detach()
 		value.Cancel()
 		logger.Printf("[%s]XDP程序卸载完成", Iface)
