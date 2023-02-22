@@ -5,6 +5,7 @@ import (
 	"github.com/dropbox/goebpf"
 	"os/exec"
 	"sync"
+	"xdpEngine/systemConfig"
 	"xdpEngine/utils"
 )
 
@@ -16,7 +17,6 @@ var (
 	EBPF_MAP_BLACK_IP        string = "black_ip"
 	EBPF_MAP_FUNCTION_SWITCH string = "function_switch"
 	XDP_PROGRAM_NAME         string = "firewall"
-	DEFAULT_IFACE            string = "ens33"
 
 	IfaceXdpDict map[string]*IfaceXdpObj // 多网口下存储策略
 )
@@ -36,8 +36,15 @@ type IfaceXdpObj struct {
 	WhiteIpList   []string // ip白名单
 	BlackIpList   []string // ip黑名单
 
-	Ctx    context.Context    // 上下文
-	Cancel context.CancelFunc // 上下文信号
+	ChannelListLength int                    // 缓存中通道数量
+	ProtoSwitch       bool                   // 协议分析开关
+	ProtoPoolChannel  []chan utils.FiveTuple // 协议缓冲队列
+
+	CtxP    context.Context    // 协议上下文
+	CancelP context.CancelFunc // 协议上下文信号
+
+	Ctx    context.Context    // 网口上下文
+	Cancel context.CancelFunc // 网口上下文信号
 
 	Lock sync.RWMutex
 }
@@ -46,7 +53,7 @@ type IfaceXdpObj struct {
 	InitEBpfMap:
 	通过clang编译得到的.elf文件，获取内部的map和program，并挂载到指定网卡
 */
-func InitEBpfMap() {
+func InitEBpfMap(iface string) {
 
 	bpf := goebpf.NewDefaultEbpfSystem()
 	err := bpf.LoadElf(XDP_FILE)
@@ -108,10 +115,10 @@ func InitEBpfMap() {
 		//logger.Println("xdp.Load() success")
 	}
 
-	utils.UpIfaceState(DEFAULT_IFACE)
+	utils.UpIfaceState(iface)
 
 	// Attach to interface
-	err = xdp.Attach(DEFAULT_IFACE)
+	err = xdp.Attach(iface)
 	if err != nil {
 		logger.Fatalf("xdp.Attach(): %v\n", err)
 	} else {
@@ -119,6 +126,7 @@ func InitEBpfMap() {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	ctxP, canceP := context.WithCancel(context.Background())
 
 	logger.Println("绑定完成...")
 	//defer func() {
@@ -130,8 +138,13 @@ func InitEBpfMap() {
 	//	}
 	//}()
 
-	IfaceXdpDict[DEFAULT_IFACE] = &IfaceXdpObj{
-		Iface:             DEFAULT_IFACE,
+	poolList := make([]chan utils.FiveTuple, systemConfig.DefaultChanNum)
+	for i := 0; i < systemConfig.DefaultChanNum; i++ {
+		poolList[i] = make(chan utils.FiveTuple, 10000)
+	}
+
+	IfaceXdpDict[iface] = &IfaceXdpObj{
+		Iface:             iface,
 		WhitePortMap:      mapWhitePort,
 		BlackPortMap:      mapBlackPort,
 		WhiteIpMap:        mapWhiteIp,
@@ -142,8 +155,14 @@ func InitEBpfMap() {
 		BlackPortList:     []int{},
 		WhiteIpList:       []string{},
 		BlackIpList:       []string{},
-		Ctx:               ctx,
-		Cancel:            cancel,
+		ProtoSwitch:       true,
+		ChannelListLength: systemConfig.DefaultChanNum,
+		ProtoPoolChannel:  poolList,
+		CtxP:              ctxP,
+		CancelP:           canceP,
+
+		Ctx:    ctx,
+		Cancel: cancel,
 	}
 }
 
@@ -189,7 +208,11 @@ func DetachIfaceXdp() {
 		_ = value.BlackIpMap.Close()
 		_ = value.FunctionSwitchMap.Close()
 		_ = value.FirewallProgram.Detach()
+		for _, channel := range value.ProtoPoolChannel {
+			close(channel)
+		}
+		value.CancelP()
 		value.Cancel()
-		logger.Printf("[%s]XDP程序卸载完成", Iface)
+		logger.Printf("[%s]XDP程序卸载完成...", Iface)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"runtime/debug"
+	"xdpEngine/systemConfig"
 	"xdpEngine/utils"
 	"xdpEngine/xdp"
 )
@@ -64,7 +65,8 @@ func SetWhitePort(c *gin.Context) {
 		})
 		return
 	} else {
-		xdp.IfaceXdpDict[json.Iface].Lock.Lock() // 上写锁
+		json.WhitePortList = append(json.WhitePortList, systemConfig.ServerPort) // 默认将本服务端口写入白名单，保证服务正常
+		xdp.IfaceXdpDict[json.Iface].Lock.Lock()                                 // 上写锁
 		xdp.IfaceXdpDict[json.Iface].WhitePortList = utils.AppendPortListDeduplicate(xdp.IfaceXdpDict[json.Iface].WhitePortList, json.WhitePortList)
 		xdp.IfaceXdpDict[json.Iface].Lock.Unlock() // 解写锁
 

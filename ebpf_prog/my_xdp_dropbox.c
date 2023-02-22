@@ -155,33 +155,21 @@ int firewall(struct xdp_md *ctx)
         int *lookup_port_black = bpf_map_lookup_elem(&black_port, &dst_port);
         if(lookup_port_black){
             bpfprint("[!] Hitted! port Black...");
-            return XDP_PASS;
+            return XDP_DROP;
         }
 
-        // IP 白名单
+        // IP 黑名单
         key.saddr = ip->saddr;  // 限制源ip
         int *lookup_ip_black = bpf_map_lookup_elem(&black_ip, &key);
         if(lookup_ip_black){
             bpfprint("[!] Hitted! ip Black...");
-            return XDP_PASS;
+            return XDP_DROP;
         }
-
-        // Lookup SRC IP in blacklisted IPs
-//        __u64 *rule_idx = bpf_map_lookup_elem(&blacklist, &key);
-//        if (rule_idx) {
-//            // Matched, increase match counter for matched "rule"
-//            __u32 index = *(__u32*)rule_idx;  // make verifier happy
-//            __u64 *counter = bpf_map_lookup_elem(&matches, &index);
-//            if (counter) {
-//                (*counter)++;
-//            }
-//            return XDP_PASS;
-//        }
 
     }
 
 
-    return XDP_PASS; // (12)
+    return XDP_PASS;
 }
 
 

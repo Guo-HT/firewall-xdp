@@ -6,17 +6,25 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 )
 
 var (
-	Logger      *log.Logger
-	Errlog      *log.Logger
-	CtrlC       chan os.Signal
-	LogFileName string = "xdpEngine.log"
+	Logger         *log.Logger
+	Errlog         *log.Logger
+	CtrlC          chan os.Signal
+	RunMode        string
+	LogFileName    string = "xdpEngine.log"
+	ServerPort     int    = 1888
+	ServerPortStr         = strconv.Itoa(ServerPort)
+	ProtoRuleFile         = "systemConfig/rule.json"
+	DefaultIface   string = "ens33"
+	DefaultChanNum int    = 4
 )
 
 func init() {
+	PrintBanner()
 	LogInit()
 	ListenExit()
 }
@@ -41,16 +49,17 @@ func ListenExit() {
 
 // PrintBanner 输出程序Banner
 func PrintBanner() {
-	fmt.Println(`===================================================================================================`)
+	//fmt.Println(`===================================================================================================`)
 	fmt.Println(``)
-	fmt.Println(`          __     ____          _`)
-	fmt.Println(` __ _____/ /__  / __/__  ___ _(_)__  ___`)
-	fmt.Println(` \ \ / _  / _ \/ _// _ \/ _ ·/ / _ \/ -_)`)
-	fmt.Println(`/_\_\\_,_/ .__/___/_//_/\_, /_/_//_/\__/`)
-	fmt.Println(`        /_/            /___/`)
-	fmt.Println(``)
+	fmt.Println(`          __     ____          _          `)
+	fmt.Println(` __ _____/ /__  / __/__  ___ _(_)__  ___  `)
+	fmt.Println(` \ \ / _  / _ \/ _// _ \/ _ ·/ / _ \/ -_) `)
+	fmt.Println(`/_\_\\_,_/ .__/___/_//_/\_, /_/_//_/\__/  `)
+	fmt.Println(`        /_/            /___/              `)
+	//fmt.Println(``)
 	fmt.Println(`===================================================================================================`)
 	fmt.Println(`[-] An XDP-based firewall`)
+	fmt.Println(`                     ———— Powered by GuoHT`)
 	fmt.Println(``)
 }
 

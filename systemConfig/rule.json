@@ -1,0 +1,14 @@
+{
+  "rules": [
+    {
+      "id": 0,
+      "protocol_name": "HTTP",
+      "req_type": "string",
+      "req_regx": ".{4,}HTTP/[1,2]\\.[0-10]",
+      "rsp_type": "string",
+      "rsp_regx": "^HTTP/[1,2]\\.[0-10]",
+      "start_port": 8880,
+      "end_port": 8890
+    }
+  ]
+}
