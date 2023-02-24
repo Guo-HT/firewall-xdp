@@ -6,21 +6,22 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"runtime"
 	"strconv"
 	"syscall"
 )
 
 var (
-	Logger         *log.Logger
-	Errlog         *log.Logger
-	CtrlC          chan os.Signal
-	RunMode        string
-	LogFileName    string = "xdpEngine.log"
-	ServerPort     int    = 1888
-	ServerPortStr         = strconv.Itoa(ServerPort)
-	ProtoRuleFile         = "systemConfig/rule.json"
-	DefaultIface   string = "ens33"
-	DefaultChanNum int    = 4
+	Logger         *log.Logger                      // 正常日志
+	Errlog         *log.Logger                      // 错误日志
+	CtrlC          chan os.Signal                   // 退出信号
+	RunMode        string                           // 运行模式
+	LogFileName    string         = "xdpEngine.log" // 日志文件
+	ServerPort     int            = 1888            // 服务监听端口
+	ServerPortStr                 = strconv.Itoa(ServerPort)
+	ProtoRuleFile                 = "systemConfig/rule.json" // 协议规则文件
+	DefaultIface   string         = "ens33"                  // 默认监听网口
+	DefaultChanNum int            = runtime.NumCPU()         // 缓冲池中channel数量为CPU核心数
 )
 
 func init() {
@@ -63,6 +64,16 @@ func PrintBanner() {
 	fmt.Println(``)
 }
 
+// SayBye 退出时输出
+func SayBye() {
+	fmt.Println(`.______   ____    ____  _______   `)
+	fmt.Println(`|   _  \  \   \  /   / |   ____|  `)
+	fmt.Println(`|  |_)  |  \   \/   /  |  |__     `)
+	fmt.Println(`|   _  <    \_    _/   |   __|    `)
+	fmt.Println(`|  |_)  |     |  |     |  |____   `)
+	fmt.Println(`|______/      |__|     |_______|  `)
+}
+
 /*
 
           __     ____          _
@@ -70,5 +81,12 @@ func PrintBanner() {
  \ \ / _  / _ \/ _// _ \/ _ ·/ / _ \/ -_)
 /_\_\\_,_/ .__/___/_//_/\_, /_/_//_/\__/
         /_/            /___/
+
+.______   ____    ____  _______
+|   _  \  \   \  /   / |   ____|
+|  |_)  |  \   \/   /  |  |__
+|   _  <    \_    _/   |   __|
+|  |_)  |     |  |     |  |____
+|______/      |__|     |_______|
 
 */

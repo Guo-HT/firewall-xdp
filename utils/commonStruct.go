@@ -51,3 +51,14 @@ type FiveTuple struct {
 	PayloadHex []byte            // 报文内容
 	Iface      string            // 网卡
 }
+
+// SessionTuple 会话对
+type SessionTuple struct {
+	ServerAddr string
+	ServerPort int
+
+	ProtoID    int   // 检测到的协议ID
+	UpdateTime int64 // 最新一次检测到的时间
+	HitReq     bool  // 请求命中
+	HitRsp     bool  // 响应命中
+}

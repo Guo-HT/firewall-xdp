@@ -41,10 +41,20 @@ func PacketCapture(iface string) {
 	flagContinue:
 		select {
 		case <-CtrlC:
-			logger.Println("PacketCapture正在退出...")
+			// 监听程序退出信息
+			logger.Printf("[%s]PacketCapture正在退出...", iface)
 			xdp.DetachIfaceXdp()
 			os.Exit(0)
+		case <-xdp.IfaceXdpDict[iface].Ctx.Done():
+			// 监听网口程序退出信息
+			logger.Printf("[%s]PacketCapture正在退出...", iface)
+			return
+		case <-xdp.IfaceXdpDict[iface].CtxP.Done():
+			// 监听网口程序退出信息
+			logger.Printf("[%s]PacketCapture正在退出...", iface)
+			return
 		default:
+			// 无异常信息，开始抓包
 			data, _, err := source.ZeroCopyReadPacketData()
 			if err != nil {
 				errlog.Println("PacketCapture ZeroCopyReadPacketData error", err)
@@ -61,21 +71,32 @@ func PacketCapture(iface string) {
 			// 如果协议分析开关打开
 			if xdp.IfaceXdpDict[iface].ProtoSwitch {
 				rand.Seed(time.Now().UnixNano())
-				targetIndex := rand.Intn(400) % xdp.IfaceXdpDict[iface].ChannelListLength
-				select {
-				case xdp.IfaceXdpDict[iface].ProtoPoolChannel[targetIndex] <- *key:
-				default:
+				randInt := rand.Intn(400)
+				loopCount := 0 // 重试计数器
+			LoopP:
+				for {
+					targetIndex := randInt % xdp.IfaceXdpDict[iface].ChannelListLength
+					select {
+					case xdp.IfaceXdpDict[iface].ProtoPoolChannel[targetIndex] <- *key:
+						break LoopP
+					default:
+						loopCount++ // 重试次数+1
+						randInt++   // 随机数+1
+					}
+					if loopCount > xdp.IfaceXdpDict[iface].ChannelListLength {
+						ProtoDrop++
+						break LoopP
+					}
 				}
 			}
 			// 协议功能结束
-
 		}
 	}
 }
 
 // StatisticLossRate 网卡抓包性能统计
 func StatisticLossRate(afpacketHandle *afpacketHandle, iface string) {
-	ticker := time.Tick(5 * time.Second)
+	ticker := time.Tick(3 * time.Second)
 	for {
 		select {
 		case <-ticker:
@@ -84,6 +105,7 @@ func StatisticLossRate(afpacketHandle *afpacketHandle, iface string) {
 				errlog.Println("StatisticLossRate error ", err)
 			}
 			logger.Println("")
+			logger.Printf("[%s] 会话流表:\n%+v", iface, xdp.IfaceXdpDict[iface].SessionFlow)
 			for i := 0; i < xdp.IfaceXdpDict[iface].ChannelListLength; i++ {
 				logger.Printf("[%s] Stats {received dropped queue-freeze}: %d - Proto: %d  Drop_Proto: %d", iface, afpacketStats, len(xdp.IfaceXdpDict[iface].ProtoPoolChannel[i]), ProtoDrop)
 			}
@@ -92,6 +114,14 @@ func StatisticLossRate(afpacketHandle *afpacketHandle, iface string) {
 			logger.Println("StatisticLossRate 退出统计...")
 			xdp.DetachIfaceXdp()
 			os.Exit(0)
+		case <-xdp.IfaceXdpDict[iface].Ctx.Done():
+			// 监听网口程序退出信息
+			logger.Printf("[%s]StatisticLossRate 退出统计...", iface)
+			return
+		case <-xdp.IfaceXdpDict[iface].CtxP.Done():
+			// 监听网口程序退出信息
+			logger.Printf("[%s]StatisticLossRate 退出统计...", iface)
+			return
 		}
 	}
 

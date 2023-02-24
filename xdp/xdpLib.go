@@ -15,6 +15,7 @@ var (
 	EBPF_MAP_BLACK_PORT      string = "black_port"
 	EBPF_MAP_WHITE_IP        string = "white_ip"
 	EBPF_MAP_BLACK_IP        string = "black_ip"
+	EBPF_MAP_PROTO           string = "proto_detect"
 	EBPF_MAP_FUNCTION_SWITCH string = "function_switch"
 	XDP_PROGRAM_NAME         string = "firewall"
 
@@ -28,6 +29,7 @@ type IfaceXdpObj struct {
 	BlackPortMap      goebpf.Map     // port黑名单
 	WhiteIpMap        goebpf.Map     // ip白名单
 	BlackIpMap        goebpf.Map     // ip黑名单
+	ProtoDetectMap    goebpf.Map     // 协议ip-port
 	FunctionSwitchMap goebpf.Map     // ip黑名单
 	FirewallProgram   goebpf.Program // xdp程序
 
@@ -35,6 +37,15 @@ type IfaceXdpObj struct {
 	BlackPortList []int    // port黑名单
 	WhiteIpList   []string // ip白名单
 	BlackIpList   []string // ip黑名单
+
+	/*
+		SessionFlow:
+		会话流表，其中
+		key: 会话中请求IP、Port、响应IP、port四元组;
+		eg: 会话中，192.168.113.128发送请求，192.168.113.1回复响应，
+			则key: "192.168.113.128_46544_192.168.113.1_80"
+	*/
+	SessionFlow map[string]*utils.SessionTuple
 
 	ChannelListLength int                    // 缓存中通道数量
 	ProtoSwitch       bool                   // 协议分析开关
@@ -90,6 +101,13 @@ func InitEBpfMap(iface string) {
 	} else {
 		//logger.Printf("Get Map '%s' success\n", EBPF_MAP_BLACK_IP)
 	}
+	// 获取协议黑名单map
+	mapProtoDetect := bpf.GetMapByName(EBPF_MAP_PROTO)
+	if mapProtoDetect == nil {
+		errlog.Fatalf("eBPF map '%s' not found\n", EBPF_MAP_PROTO)
+	} else {
+		//logger.Printf("Get Map '%s' success\n", EBPF_MAP_PROTO)
+	}
 	// 获取功能开关map
 	mapFunctionSwitch := bpf.GetMapByName(EBPF_MAP_FUNCTION_SWITCH)
 	if mapFunctionSwitch == nil {
@@ -126,7 +144,7 @@ func InitEBpfMap(iface string) {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	ctxP, canceP := context.WithCancel(context.Background())
+	ctxP, cancelP := context.WithCancel(context.Background())
 
 	logger.Println("绑定完成...")
 	//defer func() {
@@ -142,6 +160,8 @@ func InitEBpfMap(iface string) {
 	for i := 0; i < systemConfig.DefaultChanNum; i++ {
 		poolList[i] = make(chan utils.FiveTuple, 10000)
 	}
+	sessionFlow := make(map[string]*utils.SessionTuple)
+	_ = SetFunctionSwitch("proto", "stop")
 
 	IfaceXdpDict[iface] = &IfaceXdpObj{
 		Iface:             iface,
@@ -149,17 +169,23 @@ func InitEBpfMap(iface string) {
 		BlackPortMap:      mapBlackPort,
 		WhiteIpMap:        mapWhiteIp,
 		BlackIpMap:        mapBlackIp,
+		ProtoDetectMap:    mapProtoDetect,
 		FunctionSwitchMap: mapFunctionSwitch,
 		FirewallProgram:   xdp,
-		WhitePortList:     []int{},
-		BlackPortList:     []int{},
-		WhiteIpList:       []string{},
-		BlackIpList:       []string{},
-		ProtoSwitch:       true,
+
+		WhitePortList: []int{},
+		BlackPortList: []int{},
+		WhiteIpList:   []string{},
+		BlackIpList:   []string{},
+
+		SessionFlow:      sessionFlow,
+		ProtoSwitch:      false,
+		ProtoPoolChannel: poolList,
+
 		ChannelListLength: systemConfig.DefaultChanNum,
-		ProtoPoolChannel:  poolList,
-		CtxP:              ctxP,
-		CancelP:           canceP,
+
+		CtxP:    ctxP,
+		CancelP: cancelP,
 
 		Ctx:    ctx,
 		Cancel: cancel,
@@ -198,7 +224,7 @@ func DetachRestXdp() {
 	}
 }
 
-// DetachIfaceXdp 卸载已挂在的xdp程序
+// DetachIfaceXdp 卸载已挂载的xdp程序
 func DetachIfaceXdp() {
 	for Iface, value := range IfaceXdpDict {
 		logger.Printf("[%s]XDP程序正在卸载...", Iface)
@@ -213,6 +239,7 @@ func DetachIfaceXdp() {
 		}
 		value.CancelP()
 		value.Cancel()
+		value.SessionFlow = make(map[string]*utils.SessionTuple)
 		logger.Printf("[%s]XDP程序卸载完成...", Iface)
 	}
 }

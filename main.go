@@ -13,6 +13,7 @@ var iface = flag.String("i", systemConfig.DefaultIface, "绑定的网卡名, eg:
 var runMode = flag.String("M", "debug", "是否调试模式, debug->debug模式; release->release模式; test->test模式")
 
 func main() {
+	defer systemConfig.SayBye()
 	flag.Parse() // 解析命令行参数
 
 	systemConfig.RunMode = *runMode
@@ -33,8 +34,14 @@ func main() {
 	engine := gin.Default()
 	routers.InitRouters(engine)
 
-	if err := engine.Run(":" + systemConfig.ServerPortStr); err != nil {
-		systemConfig.Errlog.Println("Gin start error:", err)
+	go func() {
+		if err := engine.Run(":" + systemConfig.ServerPortStr); err != nil {
+			systemConfig.Errlog.Println("Gin start error:", err)
+		}
+	}()
+	select {
+	case <-systemConfig.CtrlC:
+		xdp.DetachIfaceXdp()
+		systemConfig.Logger.Println("再见!")
 	}
-	systemConfig.Logger.Println("============================")
 }

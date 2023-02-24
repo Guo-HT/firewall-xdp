@@ -394,3 +394,40 @@ func DeleteBlackIpMap(ipList []string, iface string) (err error) {
 	}
 	return
 }
+
+// ********************* 功能开关 ****************************
+
+// SetFunctionSwitch 配置功能开关, ["proto", ...]
+func SetFunctionSwitch(funcName string, mode string) (err error) {
+	defer func() {
+
+	}()
+
+	var switchFlag uint32 // map中对应的key标识
+	var modeFlag uint32   // 开关状态标识
+	switch funcName {
+	case "proto":
+		switchFlag = 111
+		if mode == "start" {
+			modeFlag = 1 // 协议开->1
+		} else {
+			modeFlag = 0 // 协议关->2
+		}
+	default:
+		// 没有匹配的功能
+		switchFlag = 0
+	}
+	if switchFlag == 0 {
+		errlog.Printf("SetFunctionSwitch error: 不存在该功能")
+		return errors.New("不存在该功能")
+	}
+	for iface, value := range IfaceXdpDict {
+		// 遍历所有网口
+		err := value.FunctionSwitchMap.Upsert(switchFlag, modeFlag)
+		if err != nil {
+			errlog.Printf("[%s]SetFunctionSwitch Upsert error: %v", iface, err.Error())
+			return errors.New("[" + iface + "]SetFunctionSwitch Upsert error: " + err.Error())
+		}
+	}
+	return
+}

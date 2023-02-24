@@ -7,8 +7,8 @@
       "req_regx": ".{4,}HTTP/[1,2]\\.[0-10]",
       "rsp_type": "string",
       "rsp_regx": "^HTTP/[1,2]\\.[0-10]",
-      "start_port": 8880,
-      "end_port": 8890
+      "start_port": 0,
+      "end_port": 65535
     }
   ]
 }

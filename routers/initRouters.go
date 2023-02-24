@@ -5,9 +5,14 @@ import (
 )
 
 func InitRouters(engine *gin.Engine) {
-	ApiGroup := engine.Group("/xdp")
+	XdpApiGroup := engine.Group("/xdp")
 	{
-		BlackApiGroup(ApiGroup)
-		WhiteApiGroup(ApiGroup)
+		BlackApiGroup(XdpApiGroup)
+		WhiteApiGroup(XdpApiGroup)
+	}
+
+	FuncApiGroup := engine.Group("/func")
+	{
+		ProtoApiGroup(FuncApiGroup)
 	}
 }

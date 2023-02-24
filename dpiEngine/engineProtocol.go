@@ -6,25 +6,27 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"strconv"
+	"time"
 	"xdpEngine/systemConfig"
 	"xdpEngine/utils"
 	"xdpEngine/xdp"
 )
 
-// getPacketFromChannel 从指定网卡的缓冲队列中读出数据进行分析
-func getPacketFromChannel(iface string) {
+// GetPacketFromChannel 从指定网卡的缓冲队列中读出数据进行分析
+func GetPacketFromChannel(iface string) {
 	fromIndex := 0
 	for {
 		fromIndex = fromIndex % xdp.IfaceXdpDict[iface].ChannelListLength // 负载均衡
 		select {
 		case key := <-xdp.IfaceXdpDict[iface].ProtoPoolChannel[fromIndex]:
-			go analyse(key)
+			go analyse(key, iface)
 		case <-CtrlC:
-			logger.Printf("[%s] getPacketFromChannel stop...", iface)
+			logger.Printf("[%s] GetPacketFromChannel stop...", iface)
 			xdp.DetachIfaceXdp()
 			os.Exit(0)
 		case <-xdp.IfaceXdpDict[iface].CtxP.Done():
-			logger.Printf("[%s] getPacketFromChannel ProtoEngine stop...", iface)
+			logger.Printf("[%s] GetPacketFromChannel ProtoEngine stop...", iface)
 			return
 		default:
 		}
@@ -33,16 +35,65 @@ func getPacketFromChannel(iface string) {
 }
 
 // analyse 从协议规则列表中识别报文特征
-func analyse(key utils.FiveTuple) {
+func analyse(key utils.FiveTuple, iface string) {
 	for _, rule := range ProtoRuleList {
+		// 遍历协议规则列表
 		if (key.DstPort > rule.StartPort && key.DstPort < rule.EndPort) || (key.SrcPort > rule.StartPort && key.SrcPort < rule.EndPort) {
 			// 端口符合要求
 			reReq := regexp.MustCompile(rule.ReqRegx)
 			resultReq := reReq.Find(key.Payload)
 			reRsp := regexp.MustCompile(rule.RspRegx)
 			resultRsp := reRsp.Find(key.Payload)
-			if len(resultReq) != 0 || len(resultRsp) != 0 {
-				fmt.Printf("[!]识别到%s: %s:%d - %s:%d, %v | %v\n", rule.ProtocolName, key.SrcAddr, key.SrcPort, key.DstAddr, key.DstPort, resultReq, resultRsp)
+			if len(resultReq) != 0 {
+				// 请求
+				fmt.Printf("[!]识别到%s请求: %s:%d - %s:%d\n", rule.ProtocolName, key.SrcAddr, key.SrcPort, key.DstAddr, key.DstPort)
+				target := key.DstAddr + "_" + strconv.Itoa(key.DstPort)
+				if _, ok := xdp.IfaceXdpDict[iface].SessionFlow[target]; ok {
+					// 如果会话流表中已经存在
+					if xdp.IfaceXdpDict[iface].SessionFlow[target].ProtoID == rule.Id {
+						// 相同协议
+						xdp.IfaceXdpDict[iface].SessionFlow[target].HitReq = true // 标记请求命中
+						if xdp.IfaceXdpDict[iface].SessionFlow[target].HitReq && xdp.IfaceXdpDict[iface].SessionFlow[target].HitRsp {
+							// 如果请求和响应都命中，更新最近一次命中时间，并下发策略
+							xdp.IfaceXdpDict[iface].SessionFlow[target].UpdateTime = time.Now().UnixNano()
+							fmt.Println("开始阻断：", target)
+						}
+					}
+				} else {
+					// 如果会话流表中不存在，则加入，并标注请求命中
+					xdp.IfaceXdpDict[iface].SessionFlow[target] = &utils.SessionTuple{
+						ServerAddr: key.DstAddr,
+						ServerPort: key.DstPort,
+						ProtoID:    rule.Id,
+						HitReq:     true,
+						UpdateTime: 9999999999, // 10位
+					}
+				}
+			} else if len(resultRsp) != 0 {
+				// 响应
+				fmt.Printf("[!]识别到%s响应: %s:%d - %s:%d\n", rule.ProtocolName, key.SrcAddr, key.SrcPort, key.DstAddr, key.DstPort)
+				target := key.SrcAddr + "_" + strconv.Itoa(key.SrcPort)
+				if _, ok := xdp.IfaceXdpDict[iface].SessionFlow[target]; ok {
+					// 如果会话流表中已经存在
+					if xdp.IfaceXdpDict[iface].SessionFlow[target].ProtoID == rule.Id {
+						// 相同协议
+						xdp.IfaceXdpDict[iface].SessionFlow[target].HitRsp = true // 标记响应命中
+						if xdp.IfaceXdpDict[iface].SessionFlow[target].HitRsp && xdp.IfaceXdpDict[iface].SessionFlow[target].HitReq {
+							// 如果响应和请求都命中，更新最近一次命中时间，并下发策略
+							xdp.IfaceXdpDict[iface].SessionFlow[target].UpdateTime = time.Now().UnixNano()
+							fmt.Println("开始阻断：", target)
+						}
+					}
+				} else {
+					// 如果会话流表中不存在，则加入，并标注请求命中
+					xdp.IfaceXdpDict[iface].SessionFlow[target] = &utils.SessionTuple{
+						ServerAddr: key.SrcAddr,
+						ServerPort: key.SrcPort,
+						ProtoID:    rule.Id,
+						HitRsp:     true,
+						UpdateTime: 9999999999, // 10位
+					}
+				}
 			}
 		}
 	}

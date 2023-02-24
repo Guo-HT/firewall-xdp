@@ -14,6 +14,8 @@
 #define GET_IP(x) (((x&0xff000000)>>24)|((x&0x00ff0000)>>8)|((x&0x0000ff00)<<8)|((x&0x000000ff)<<24))
 // 可读的MAC地址
 #define GET_MAC(x) ()
+// 拼接可lookup的IP-port数据 0xff000000ff000000
+#define JOIN_IP_PORT(ip, port) ((ip&0x00000000ffffffff) | ((port&0x00000000ffffffff)<<32))
 // 封装bpf_trace_printk函数
 #define bpfprint(fmt, ...) ({ char fmt_char[] = fmt;  bpf_trace_printk(fmt_char, sizeof(fmt_char),  ##__VA_ARGS__); })
 
@@ -56,7 +58,23 @@ BPF_MAP_DEF(black_ip) = {
 };
 BPF_MAP_ADD(black_ip);
 
-// 功能开关map
+// 协议用ip-port
+struct proto_ip_port{
+    __u32 ip;
+    __u32 port;
+}proto_ip_port;
+
+// 协议 黑名单: key中拼接ip_port
+BPF_MAP_DEF(proto_detect) = {
+	.map_type    = BPF_MAP_TYPE_HASH,
+	.key_size    = sizeof(proto_ip_port),
+	.value_size  = sizeof(__u32),
+	.max_entries = MAX_SIZE,
+	.map_flags   = 1,
+};
+BPF_MAP_ADD(proto_detect);
+
+// 功能开关map: 111->协议阻断
 BPF_MAP_DEF(function_switch) = {
 	.map_type    = BPF_MAP_TYPE_HASH,
 	.key_size    = sizeof(__u32),
@@ -80,20 +98,23 @@ int firewall(struct xdp_md *ctx)
     int src_port = 0;
     int dst_port = 0;
 
+    // 匹配LPM_TRIE时需要
     struct {
         __u32 prefixlen;
         __u32 saddr;
     } key;
+    // 掩码以32搜索，即为ip匹配，24等，为网段匹配
     key.prefixlen = 32;
 
+    // 以下为流量拆包及合法性检验
     if ((void *)eth + sizeof(*eth) <= data_end)
-    {
+    {// 确认可能是ETH层报文
         ip = data + sizeof(*eth);
         if ((void *)ip + sizeof(*ip) <= data_end)
-        {
+        {  // 确认可能是IP报文
             // bpfprint("ip: %d, %d", ip->saddr, ip->daddr);
             if (ip->protocol == IPPROTO_UDP)
-            {
+            {   // 确认是UDP报文
                 udp = (void *)ip + sizeof(*ip);
                 if ((void *)udp + sizeof(*udp) <= data_end)
                 {
@@ -106,7 +127,7 @@ int firewall(struct xdp_md *ctx)
             }
 
             if (ip->protocol == IPPROTO_TCP)
-            {
+            {   // 确认是tcp报文
                 tcp = (void *)ip + sizeof(*ip);
                 if ((void *)tcp + sizeof(*tcp) <= data_end)
                 {
@@ -117,9 +138,16 @@ int firewall(struct xdp_md *ctx)
                     goto process;
                 }
             }
+        }else{
+            // 不认识的报文，放行
+            return XDP_PASS;
         }
+    }else{
+        // 不认识的报文，放行
+        return XDP_PASS;
     }
 
+    // 以下为报文过滤
     process:
 
     if(is_udp || is_tcp){
@@ -164,6 +192,20 @@ int firewall(struct xdp_md *ctx)
         if(lookup_ip_black){
             bpfprint("[!] Hitted! ip Black...");
             return XDP_DROP;
+        }
+
+        // 协议黑名单
+        __u32 proto_detect_switch = 111;  // 使用纯数字，方便存储、查询
+        int *lookup_proto_switch = bpf_map_lookup_elem(&function_switch, &proto_detect_switch);
+        if(lookup_proto_switch){ // 判断协议阻断开关状态
+            struct proto_ip_port proto;
+            proto.ip = ip->saddr;
+            proto.port = src_port;
+            int *lookup_proto_ip_port = bpf_map_lookup_elem(&proto_detect, &proto);
+            if (lookup_proto_ip_port){
+                bpfprint("[!] Hitted! proto black...");
+                return XDP_DROP;
+            }
         }
 
     }
