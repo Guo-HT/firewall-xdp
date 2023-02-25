@@ -1,7 +1,9 @@
 package dpiEngine
 
 import (
+	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -38,6 +40,9 @@ func GetPacketFromChannel(iface string) {
 func analyse(key utils.FiveTuple, iface string) {
 	for _, rule := range ProtoRuleList {
 		// 遍历协议规则列表
+		if rule.IsEnable == false {
+			continue // 如果当前协议未启用，不检测
+		}
 		if (key.DstPort > rule.StartPort && key.DstPort < rule.EndPort) || (key.SrcPort > rule.StartPort && key.SrcPort < rule.EndPort) {
 			// 端口符合要求
 			reReq := regexp.MustCompile(rule.ReqRegx)
@@ -143,4 +148,33 @@ func readProtoRuleFile() (ruleContent []byte) {
 	}
 	//return *(*string)(unsafe.Pointer(&content))
 	return content
+}
+
+// WriteProtoRuleFile 将协议规则写入文件
+func WriteProtoRuleFile() (err error) {
+	type protoRuleList struct {
+		Rules []utils.ProtoRule `json:"rules"`
+	}
+	logger.Println("更新协议规则文件...")
+	ruleList := protoRuleList{
+		Rules: ProtoRuleList,
+	}
+	// 序列化
+	result, err := json.Marshal(ruleList)
+	if err != nil {
+		errlog.Println("WriteProtoRuleFile json.Marshal error: ", err.Error())
+		return errors.New(err.Error())
+	}
+	// 保存文件
+	ruleFile, err := os.OpenFile(systemConfig.ProtoRuleFile, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
+	if err != nil {
+		errlog.Println("WriteProtoRuleFile write File err: " + err.Error())
+		return err
+	}
+	defer ruleFile.Close()
+	// offset
+	writer := bufio.NewWriter(ruleFile)
+	_, err = writer.WriteString(string(result))
+	_ = writer.Flush() // 刷新缓冲区，强制写出
+	return nil
 }

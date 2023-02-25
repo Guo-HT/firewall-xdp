@@ -36,6 +36,7 @@ type ProtoRule struct {
 	RspRegx      string `json:"rsp_regx"`      // 响应正则
 	StartPort    int    `json:"start_port"`    // 起始端口
 	EndPort      int    `json:"end_port"`      // 结束端口
+	IsEnable     bool   `json:"is_enable"`     // 是否启用
 }
 
 // FiveTuple 报文解析后结果
@@ -61,4 +62,10 @@ type SessionTuple struct {
 	UpdateTime int64 // 最新一次检测到的时间
 	HitReq     bool  // 请求命中
 	HitRsp     bool  // 响应命中
+}
+
+// ProtoStatusConf 配置单个协议开关
+type ProtoStatusConf struct {
+	ProtoName string `json:"protoName"`
+	Status    bool   `json:"status"`
 }

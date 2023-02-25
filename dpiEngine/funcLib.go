@@ -10,9 +10,9 @@ import (
 
 func StartProtoEngine() {
 	for iface, xdpObj := range xdp.IfaceXdpDict {
-		logger.Printf("正在开启[%s]的分析功能...", iface)
 		// 循环开启各个网口的协议分析功能
 		if xdpObj.ProtoSwitch {
+			logger.Printf("正在开启[%s]的分析功能...", iface)
 			go GetPacketFromChannel(iface)
 			go PacketCapture(iface)
 		}
