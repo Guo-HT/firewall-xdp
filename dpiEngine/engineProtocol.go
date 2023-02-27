@@ -62,6 +62,7 @@ func analyse(key utils.FiveTuple, iface string) {
 							// 如果请求和响应都命中，更新最近一次命中时间，并下发策略
 							xdp.IfaceXdpDict[iface].SessionFlow[target].UpdateTime = time.Now().UnixNano()
 							fmt.Println("开始阻断：", target)
+							xdp.UpdateProtoIpPortMap()
 						}
 					}
 				} else {
@@ -87,6 +88,7 @@ func analyse(key utils.FiveTuple, iface string) {
 							// 如果响应和请求都命中，更新最近一次命中时间，并下发策略
 							xdp.IfaceXdpDict[iface].SessionFlow[target].UpdateTime = time.Now().UnixNano()
 							fmt.Println("开始阻断：", target)
+							xdp.UpdateProtoIpPortMap()
 						}
 					}
 				} else {

@@ -194,16 +194,33 @@ int firewall(struct xdp_md *ctx)
             return XDP_DROP;
         }
 
+        //test
+        // struct proto_ip_port proto;
+        // proto.ip = ip->saddr;
+        // proto.port = src_port;
+        // __u32 v = 0;
+        // bpf_map_update_elem(&proto_detect, &proto, &v, BPF_ANY);
+        // bpfprint("=========== %u, %u", ip->saddr, src_port);
+
         // 协议黑名单
         __u32 proto_detect_switch = 111;  // 使用纯数字，方便存储、查询
         int *lookup_proto_switch = bpf_map_lookup_elem(&function_switch, &proto_detect_switch);
-        if(lookup_proto_switch){ // 判断协议阻断开关状态
-            struct proto_ip_port proto;
-            proto.ip = ip->saddr;
-            proto.port = src_port;
-            int *lookup_proto_ip_port = bpf_map_lookup_elem(&proto_detect, &proto);
-            if (lookup_proto_ip_port){
-                bpfprint("[!] Hitted! proto black...");
+        if(lookup_proto_switch && *lookup_proto_switch){ // 判断协议阻断开关状态
+            // bpfprint("=========== %u", *lookup_proto_switch);
+            struct proto_ip_port proto_src;
+            struct proto_ip_port proto_dst;
+            proto_src.ip = ip->saddr;
+            proto_src.port = src_port;
+            proto_dst.ip = ip->daddr;
+            proto_dst.port = dst_port;
+            int *lookup_proto_ip_port_src = bpf_map_lookup_elem(&proto_detect, &proto_src);
+            int *lookup_proto_ip_port_dst = bpf_map_lookup_elem(&proto_detect, &proto_dst);
+            if (lookup_proto_ip_port_src){
+                bpfprint("[!] Hitted! proto black... %u", proto_src.port);
+                return XDP_DROP;
+            }
+            if (lookup_proto_ip_port_dst){
+                bpfprint("[!] Hitted! proto black... %u", proto_dst.port);
                 return XDP_DROP;
             }
         }

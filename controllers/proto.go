@@ -68,6 +68,7 @@ func StopProtoEngine(c *gin.Context) {
 	}()
 	for iface, xdpObj := range xdp.IfaceXdpDict {
 		logger.Printf("[%s]正在关闭协议分析功能", iface)
+		xdpObj.ProtoSwitch = false
 		err := xdp.SetFunctionSwitch("proto", "stop")
 		if err != nil {
 			errlog.Println("SetFunctionSwitch stop 'proto' error:", err.Error())
@@ -85,8 +86,9 @@ func StopProtoEngine(c *gin.Context) {
 			xdpObj.ProtoPoolChannel[i] = make(chan utils.FiveTuple, 10000)
 		}
 		xdpObj.SessionFlow = make(map[string]*utils.SessionTuple) // 清空会话流表
-		xdpObj.CancelP()                                          // 结束开启的相关协程
-		xdpObj.ProtoSwitch = false
+		_ = xdp.UpdateProtoIpPortMap()
+
+		xdpObj.CancelP() // 结束开启的相关协程
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
@@ -225,4 +227,26 @@ func AddProtoRule(c *gin.Context) {
 		})
 		return
 	}
+}
+
+// GetProtoIpPort 获取所有IP-Port策略
+func GetProtoIpPort(c *gin.Context) {
+	defer func() {
+		if err := recover(); err != nil {
+			errlog.Printf("获取协议阻断IP-Port策略失败, %s", debug.Stack())
+			c.JSON(http.StatusOK, gin.H{
+				"code": 500,
+				"msg":  "服务器内部错误",
+				"data": []utils.IpPort{},
+			})
+			return
+		}
+	}()
+	logger.Println("获取协议阻断IP-Port策略")
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "获取协议规则状态成功",
+		"data": xdp.GetAllProtoIpPortMap(),
+	})
+	return
 }

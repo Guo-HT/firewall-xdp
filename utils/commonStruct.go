@@ -69,3 +69,9 @@ type ProtoStatusConf struct {
 	ProtoName string `json:"protoName"`
 	Status    bool   `json:"status"`
 }
+
+// IpPort ip-port
+type IpPort struct {
+	IP   string `json:"ip"`
+	Port int    `json:"port"`
+}

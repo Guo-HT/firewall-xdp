@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/gin-gonic/gin"
+	"os"
 	"xdpEngine/dpiEngine"
 	"xdpEngine/routers"
 	"xdpEngine/systemConfig"
@@ -37,8 +38,11 @@ func main() {
 	go func() {
 		if err := engine.Run(":" + systemConfig.ServerPortStr); err != nil {
 			systemConfig.Errlog.Println("Gin start error:", err)
+			xdp.DetachIfaceXdp()
+			os.Exit(-1)
 		}
 	}()
+
 	select {
 	case <-systemConfig.CtrlC:
 		xdp.DetachIfaceXdp()

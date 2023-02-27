@@ -2,8 +2,11 @@ package xdp
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dropbox/goebpf"
 	"os"
+	"strconv"
+	"strings"
 	"xdpEngine/utils"
 )
 
@@ -203,7 +206,7 @@ func InsertWhiteIpMap(ipList []string, iface string) (err error) {
 		for {
 			nextKey, err := IfaceXdpDict[iface].WhiteIpMap.GetNextKey("")
 			if err != nil {
-				errlog.Println("InsertWhiteIpMap GetNextKey error:", err)
+				//errlog.Println("InsertWhiteIpMap GetNextKey error:", err)
 				break
 			}
 			logger.Println("删除一个,", utils.IpFormat(nextKey))
@@ -241,7 +244,7 @@ func GetAllWhiteIpMap(iface string) (ipList []string, err error) {
 		nextKey, err := IfaceXdpDict[iface].WhiteIpMap.GetNextKey("")
 		for {
 			if err != nil {
-				errlog.Println("GetAllWhiteIpMap GetNextKey error:", err)
+				//errlog.Println("GetAllWhiteIpMap GetNextKey error:", err)
 				break
 			}
 			ipString := utils.IpFormat(nextKey)
@@ -308,7 +311,7 @@ func InsertBlackIpMap(ipList []string, iface string) (err error) {
 		for {
 			nextKey, err := IfaceXdpDict[iface].BlackIpMap.GetNextKey("")
 			if err != nil {
-				errlog.Println("InsertBlackIpMap GetNextKey error:", err)
+				//errlog.Println("InsertBlackIpMap GetNextKey error:", err)
 				break
 			}
 			logger.Println("删除一个,", utils.IpFormat(nextKey))
@@ -346,7 +349,7 @@ func GetAllBlackIpMap(iface string) (ipList []string, err error) {
 		nextKey, err := IfaceXdpDict[iface].BlackIpMap.GetNextKey("")
 		for {
 			if err != nil {
-				errlog.Println("GetAllBlackIpMap GetNextKey error:", err)
+				//errlog.Println("GetAllBlackIpMap GetNextKey error:", err)
 				break
 			}
 			ipString := utils.IpFormat(nextKey)
@@ -392,6 +395,86 @@ func DeleteBlackIpMap(ipList []string, iface string) (err error) {
 	} else {
 		err = errors.New("该网卡无效")
 	}
+	return
+}
+
+// *********************** 协议 *****************************
+
+// UpdateProtoIpPortMap 将协议分析结果以IP-PORT形式写入对应MAP
+func UpdateProtoIpPortMap() (err error) {
+	defer func() {
+		if err := recover(); err != nil {
+			errlog.Println("UpdateProtoIpPortMap error, ", err)
+		}
+	}()
+	for iface, xdpObj := range IfaceXdpDict {
+		IfaceXdpDict[iface].Lock.RLock()
+		logger.Printf("[%s]正在更新协议阻断Map: %v", iface, xdpObj.SessionFlow)
+		// ********************** 删除所有 *************************
+		for {
+			// [192 168 113 1 87 52 0 0]
+			nextKey, err := IfaceXdpDict[iface].ProtoDetectMap.GetNextKey("")
+			if err != nil {
+				//errlog.Println("UpdateProtoIpPortMap GetNextKey error:", err)
+				break
+			}
+			logger.Println("删除一个,", utils.IpPortFormat(nextKey))
+			err = IfaceXdpDict[iface].ProtoDetectMap.Delete(nextKey)
+			if err != nil {
+				errlog.Println("UpdateProtoIpPortMap preDelete error:", err)
+				break
+			}
+		}
+		// ************************ 写入 ***************************
+		for _, session := range xdpObj.SessionFlow {
+			logger.Printf("正在导入协议阻断数据: %+v", utils.IpPort2Byte(session.ServerAddr, session.ServerPort))
+			err := IfaceXdpDict[iface].ProtoDetectMap.Insert(utils.IpPort2Byte(session.ServerAddr, session.ServerPort), 0)
+			if err != nil {
+				errlog.Println("插入协议阻断数据, ", err.Error())
+			}
+		}
+
+		IfaceXdpDict[iface].Lock.RUnlock()
+	}
+
+	return
+}
+
+// GetAllProtoIpPortMap 查询MAP中所有协议分析结果
+func GetAllProtoIpPortMap() (ipPortList []utils.IpPort) {
+	defer func() {
+		if err := recover(); err != nil {
+			errlog.Println("GetAllProtoIpPortMap error, ", err)
+		}
+	}()
+	for iface, xdpObj := range IfaceXdpDict {
+		IfaceXdpDict[iface].Lock.RLock()
+
+		nextKey, err := xdpObj.ProtoDetectMap.GetNextKey("")
+		for {
+			if err != nil {
+				//errlog.Println("GetAllProtoIpPortMap GetNextKey error:", err)
+				break
+			}
+			ipPort := utils.IpPortFormat(nextKey)
+			ipPortArray := strings.Split(ipPort, ":")
+			port, err := strconv.Atoi(ipPortArray[1])
+			if err != nil {
+				errlog.Println("GetAllProtoIpPortMap Atoi error: ", err.Error())
+			}
+			ipPortList = append(ipPortList, utils.IpPort{
+				IP:   ipPortArray[0],
+				Port: port,
+			})
+			nextKey, err = xdpObj.ProtoDetectMap.GetNextKey(nextKey)
+			if err != nil {
+				errlog.Println("GetAllProtoIpPortMap GetNextKey error:", err)
+				break
+			}
+		}
+		IfaceXdpDict[iface].Lock.RUnlock()
+	}
+	fmt.Println(ipPortList)
 	return
 }
 
