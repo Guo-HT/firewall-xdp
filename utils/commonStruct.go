@@ -3,27 +3,31 @@ package utils
 import "github.com/google/gopacket/layers"
 
 type WhiteIpStruct struct {
-	WhiteIpList []string `json:"whiteIpList,omitempty"`
-	Iface       string   `json:"iface,omitempty"`
+	WhiteIpList []string `json:"whiteIpList"`
+	Iface       string   `json:"iface"`
 }
 
 type WhitePortStruct struct {
-	WhitePortList []int  `json:"whitePortList,omitempty"`
-	Iface         string `json:"iface,omitempty"`
+	WhitePortList []int  `json:"whitePortList"`
+	Iface         string `json:"iface"`
 }
 
 type BlackIpStruct struct {
-	BlackIpList []string `json:"blackIpList,omitempty"`
-	Iface       string   `json:"iface,omitempty"`
+	BlackIpList []string `json:"blackIpList"`
+	Iface       string   `json:"iface"`
 }
 
 type BlackPortStruct struct {
-	BlackPortList []int  `json:"blackPortList,omitempty"`
-	Iface         string `json:"iface,omitempty"`
+	BlackPortList []int  `json:"blackPortList"`
+	Iface         string `json:"iface"`
 }
 
 type IfaceStruct struct {
-	Iface string `json:"iface,omitempty"`
+	Iface string `json:"iface"`
+}
+
+type ProtoId struct {
+	Id int `json:"id"`
 }
 
 // ProtoRule 协议规则库

@@ -20,6 +20,7 @@ func ProtoApiGroup(router *gin.RouterGroup) {
 		ProtoEngineRG.POST("/rules", controllers.SetProtoStatus)        // 配置协议开关
 		ProtoEngineRG.POST("/reloadRules", controllers.ReloadProtoRule) // 重载协议列表
 		ProtoEngineRG.POST("/addRules", controllers.AddProtoRule)       // 新增协议规则
+		ProtoEngineRG.POST("/delRules", controllers.DelProtoRule)       // 新增协议规则
 
 	}
 }

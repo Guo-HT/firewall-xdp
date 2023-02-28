@@ -173,7 +173,7 @@ func InitEBpfMap(iface string) {
 		FunctionSwitchMap: mapFunctionSwitch,
 		FirewallProgram:   xdp,
 
-		WhitePortList: []int{},
+		WhitePortList: []int{systemConfig.ServerPort}, // 引擎服务端口默认加白
 		BlackPortList: []int{},
 		WhiteIpList:   []string{},
 		BlackIpList:   []string{},
@@ -190,6 +190,7 @@ func InitEBpfMap(iface string) {
 		Ctx:    ctx,
 		Cancel: cancel,
 	}
+	_ = InsertWhitePortMap([]int{systemConfig.ServerPort}, iface) // 引擎服务端口加白
 }
 
 // printBpfInfo 输出当前.elf文件下的map和program（来源：dropbox样例）

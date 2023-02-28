@@ -15,4 +15,5 @@ func InitRouters(engine *gin.Engine) {
 	{
 		ProtoApiGroup(FuncApiGroup)
 	}
+
 }

@@ -217,6 +217,7 @@ func AddProtoRule(c *gin.Context) {
 		logger.Printf("正在添加协议规则...")
 		// 加入协议规则列表
 		dpiEngine.ProtoRuleList = append(dpiEngine.ProtoRuleList, json)
+		dpiEngine.ProtoRuleList = utils.ResetRulesId(dpiEngine.ProtoRuleList)
 		// 写入配置文件
 		_ = dpiEngine.WriteProtoRuleFile() // 协议规则写入文件
 		dpiEngine.InitProtoRules()         // 初始化协议规则列表
@@ -249,4 +250,42 @@ func GetProtoIpPort(c *gin.Context) {
 		"data": xdp.GetAllProtoIpPortMap(),
 	})
 	return
+}
+
+// DelProtoRule 删除指定协议规则
+func DelProtoRule(c *gin.Context) {
+	defer func() {
+		if err := recover(); err != nil {
+			errlog.Println("DelProtoRule error : ", debug.Stack())
+			c.JSON(http.StatusOK, gin.H{
+				"code": 500,
+				"msg":  "服务器内部错误",
+				"data": dpiEngine.ProtoRuleList,
+			})
+			return
+		}
+	}()
+
+	var json utils.ProtoId
+	if err := c.ShouldBindJSON(&json); err != nil {
+		errlog.Println("DelProtoRule: 请求参数错误")
+		c.JSON(http.StatusOK, gin.H{
+			"code": 400,
+			"msg":  "请求参数错误",
+			"data": []utils.ProtoRule{},
+		})
+		return
+	} else {
+		dpiEngine.ProtoRuleList = utils.DeleteRuleById(dpiEngine.ProtoRuleList, json.Id)
+		// 写入配置文件
+		_ = dpiEngine.WriteProtoRuleFile() // 协议规则写入文件
+		dpiEngine.InitProtoRules()         // 初始化协议规则列表
+		c.JSON(http.StatusOK, gin.H{
+			"code": 200,
+			"msg":  "协议规则删除完成",
+			"data": dpiEngine.ProtoRuleList,
+		})
+		return
+	}
+
 }

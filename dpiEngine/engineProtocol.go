@@ -162,7 +162,7 @@ func WriteProtoRuleFile() (err error) {
 		Rules: ProtoRuleList,
 	}
 	// 序列化
-	result, err := json.Marshal(ruleList)
+	result, err := json.MarshalIndent(ruleList, "", "\t")
 	if err != nil {
 		errlog.Println("WriteProtoRuleFile json.Marshal error: ", err.Error())
 		return errors.New(err.Error())

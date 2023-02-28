@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"xdpEngine/systemConfig"
 	"xdpEngine/utils"
 )
 
@@ -29,7 +30,9 @@ func InsertWhitePortMap(portList []int, iface string) (err error) {
 	defer func() {
 
 	}()
-	logger.Printf("[%s]正在导入[ %d ]个Port白名单", iface, len(portList))
+	portList = utils.AppendPortListDeduplicate(portList, []int{systemConfig.ServerPort}) // 将引擎服务端口默认加白
+
+	logger.Printf("[%s]正在导入[ %d ]个Port白名单: %v", iface, len(portList), portList)
 	if _, ok := IfaceXdpDict[iface]; ok {
 		// iface存在
 		IfaceXdpDict[iface].Lock.RLock()         // 读锁
@@ -86,6 +89,9 @@ func DeleteWhitePortMap(portList []int, iface string) (err error) {
 		defer IfaceXdpDict[iface].Lock.RUnlock() // 解锁
 
 		for _, port := range portList {
+			if port == systemConfig.ServerPort {
+				continue // 跳过服务Port，避免阻断后无法操作
+			}
 			// 先查找，如果查不到，则不删除
 			_, err := IfaceXdpDict[iface].WhitePortMap.Lookup(port)
 			if err != nil {

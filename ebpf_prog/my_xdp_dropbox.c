@@ -83,6 +83,38 @@ BPF_MAP_DEF(function_switch) = {
 };
 BPF_MAP_ADD(function_switch);
 
+// 事件
+//struct flow_event{
+//    __u32 saddr;
+//    __u32 daddr;
+//    __u32 source;
+//    __u32 dest;
+//    __u32 status;
+//}flow_event;
+//
+//// 事件上报
+//BPF_MAP_DEF(event) = {
+//    .map_type = BPF_MAP_TYPE_PERF_EVENT_ARRAY,
+//    .value_size = 12,
+//    .max_entries = MAX_SIZE,
+//};
+//BPF_MAP_ADD(event);
+
+struct port_map{
+    __u32 src_port;
+    __u32 dst_port;
+}port_map;
+
+//static void send_msg(struct xdp_md *ctx, struct iphdr *ip, struct port_map *ports, __u32 status){
+//    struct flow_event fev;
+//    fev.saddr = ip->saddr;
+//    fev.daddr = ip->daddr;
+//    fev.source = ports->src_port;
+//    fev.dest = ports->dst_port;
+//    fev.status = status;
+//    bpf_perf_event_output(ctx, &event, BPF_F_CURRENT_CPU, &fev, sizeof(fev));
+//}
+
 SEC("xdp")
 int firewall(struct xdp_md *ctx)
 {
@@ -93,10 +125,11 @@ int firewall(struct xdp_md *ctx)
     struct iphdr *ip;
     struct tcphdr *tcp;
     struct udphdr *udp;
+    struct port_map this_port_map;
     int is_tcp = 0;
     int is_udp = 0;
-    int src_port = 0;
-    int dst_port = 0;
+    __u32 src_port = 0;
+    __u32 dst_port = 0;
 
     // 匹配LPM_TRIE时需要
     struct {
@@ -161,6 +194,8 @@ int firewall(struct xdp_md *ctx)
             src_port = GET_PORT(tcp->source);
             dst_port = GET_PORT(tcp->dest);
         }
+        this_port_map.src_port = src_port;
+        this_port_map.dst_port = dst_port;
         bpfprint("[ IP ] src: %u, dst: %u", ip->saddr, ip->daddr);
         bpfprint("[Port] src: %u, dst: %u", src_port, dst_port);
 
