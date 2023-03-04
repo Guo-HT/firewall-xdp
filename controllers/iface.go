@@ -160,14 +160,18 @@ func EngineStatus(c *gin.Context) {
 		return
 	} else {
 		c.JSON(http.StatusOK, gin.H{
-			"iface":         iface,
-			"port_white":    portWhite,
-			"port_black":    portBlack,
-			"ip_white":      ipWhite,
-			"ip_black":      ipBlack,
-			"proto_switch":  utils.ConvertProtoCode2Status(protoCode),
-			"proto":         dpiEngine.GetStartingProto(),
-			"proto_ip_port": protoIpPort,
+			"code": 200,
+			"msg":  "网卡引擎状态获取成功",
+			"data": gin.H{
+				"iface":         iface,
+				"port_white":    portWhite,
+				"port_black":    portBlack,
+				"ip_white":      ipWhite,
+				"ip_black":      ipBlack,
+				"proto_switch":  utils.ConvertProtoCode2Status(protoCode),
+				"proto":         dpiEngine.GetStartingProto(),
+				"proto_ip_port": protoIpPort,
+			},
 		})
 		return
 	}
