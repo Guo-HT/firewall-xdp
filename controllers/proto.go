@@ -29,6 +29,7 @@ func StartProtoEngine(c *gin.Context) {
 			continue
 		}
 		logger.Printf("[%s]正在开启协议分析功能", iface)
+		xdp.IfaceXdpDict[iface].Lock.RLock()
 		go dpiEngine.GetPacketFromChannel(iface) // 启动消费者
 		go dpiEngine.PacketCapture(iface)        // 开始抓包
 		xdpObj.ProtoSwitch = true
@@ -45,7 +46,9 @@ func StartProtoEngine(c *gin.Context) {
 		}
 		xdpObj.SessionFlow = make(map[string]*utils.SessionTuple) // 初始化会话流表
 		xdpObj.CtxP, xdpObj.CancelP = context.WithCancel(context.Background())
+		xdp.IfaceXdpDict[iface].Lock.RUnlock()
 	}
+	systemConfig.ProtoEngineStatus = true
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "网卡协议识别功能开启成功",
@@ -68,6 +71,7 @@ func StopProtoEngine(c *gin.Context) {
 	}()
 	for iface, xdpObj := range xdp.IfaceXdpDict {
 		logger.Printf("[%s]正在关闭协议分析功能", iface)
+		xdp.IfaceXdpDict[iface].Lock.RLock()
 		xdpObj.ProtoSwitch = false
 		err := xdp.SetFunctionSwitch("proto", "stop")
 		if err != nil {
@@ -83,13 +87,15 @@ func StopProtoEngine(c *gin.Context) {
 		// 清空当前的缓冲池
 		xdpObj.ProtoPoolChannel = make([]chan utils.FiveTuple, systemConfig.DefaultChanNum)
 		for i := 0; i < systemConfig.DefaultChanNum; i++ {
-			xdpObj.ProtoPoolChannel[i] = make(chan utils.FiveTuple, 10000)
+			xdpObj.ProtoPoolChannel[i] = make(chan utils.FiveTuple, systemConfig.DefaultChanLength)
 		}
 		xdpObj.SessionFlow = make(map[string]*utils.SessionTuple) // 清空会话流表
 		_ = xdp.UpdateProtoIpPortMap()
 
 		xdpObj.CancelP() // 结束开启的相关协程
+		xdp.IfaceXdpDict[iface].Lock.RUnlock()
 	}
+	systemConfig.ProtoEngineStatus = false
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "网卡协议识别功能关闭成功",

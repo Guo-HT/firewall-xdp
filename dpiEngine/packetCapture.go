@@ -43,7 +43,7 @@ func PacketCapture(iface string) {
 		case <-CtrlC:
 			// 监听程序退出信息
 			logger.Printf("[%s]PacketCapture正在退出...", iface)
-			xdp.DetachIfaceXdp()
+			xdp.StopAllXdpEngine()
 			os.Exit(0)
 		case <-xdp.IfaceXdpDict[iface].Ctx.Done():
 			// 监听网口程序退出信息
@@ -57,7 +57,7 @@ func PacketCapture(iface string) {
 			// 无异常信息，开始抓包
 			data, _, err := source.ZeroCopyReadPacketData()
 			if err != nil {
-				errlog.Println("PacketCapture ZeroCopyReadPacketData error", err)
+				errlog.Printf("[%s]PacketCapture ZeroCopyReadPacketData error, %v", iface, err)
 				goto flagContinue
 			}
 			packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
@@ -112,7 +112,7 @@ func StatisticLossRate(afpacketHandle *afpacketHandle, iface string) {
 
 		case <-CtrlC:
 			logger.Println("StatisticLossRate 退出统计...")
-			xdp.DetachIfaceXdp()
+			xdp.StopAllXdpEngine()
 			os.Exit(0)
 		case <-xdp.IfaceXdpDict[iface].Ctx.Done():
 			// 监听网口程序退出信息

@@ -17,15 +17,16 @@ import (
 
 // GetPacketFromChannel 从指定网卡的缓冲队列中读出数据进行分析
 func GetPacketFromChannel(iface string) {
+	chanLength := xdp.IfaceXdpDict[iface].ChannelListLength
 	fromIndex := 0
 	for {
-		fromIndex = fromIndex % xdp.IfaceXdpDict[iface].ChannelListLength // 负载均衡
+		fromIndex = fromIndex % chanLength // 负载均衡
 		select {
 		case key := <-xdp.IfaceXdpDict[iface].ProtoPoolChannel[fromIndex]:
 			go analyse(key, iface)
 		case <-CtrlC:
 			logger.Printf("[%s] GetPacketFromChannel stop...", iface)
-			xdp.DetachIfaceXdp()
+			xdp.StopAllXdpEngine()
 			os.Exit(0)
 		case <-xdp.IfaceXdpDict[iface].CtxP.Done():
 			logger.Printf("[%s] GetPacketFromChannel ProtoEngine stop...", iface)
@@ -164,7 +165,7 @@ func WriteProtoRuleFile() (err error) {
 	// 序列化
 	result, err := json.MarshalIndent(ruleList, "", "\t")
 	if err != nil {
-		errlog.Println("WriteProtoRuleFile json.Marshal error: ", err.Error())
+		errlog.Println("WriteProtoRuleFile json.MarshalIndent error: ", err.Error())
 		return errors.New(err.Error())
 	}
 	// 保存文件

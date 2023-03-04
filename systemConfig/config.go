@@ -12,16 +12,21 @@ import (
 )
 
 var (
-	Logger         *log.Logger                      // 正常日志
-	Errlog         *log.Logger                      // 错误日志
-	CtrlC          chan os.Signal                   // 退出信号
-	RunMode        string                           // 运行模式
-	LogFileName    string         = "xdpEngine.log" // 日志文件
-	ServerPort     int            = 1888            // 服务监听端口
-	ServerPortStr                 = strconv.Itoa(ServerPort)
-	ProtoRuleFile                 = "systemConfig/rule.json" // 协议规则文件
-	DefaultIface   string         = "ens33"                  // 默认监听网口
-	DefaultChanNum int            = runtime.NumCPU()         // 缓冲池中channel数量为CPU核心数
+	Logger            *log.Logger                      // 正常日志
+	Errlog            *log.Logger                      // 错误日志
+	CtrlC             chan os.Signal                   // 退出信号
+	RunMode           string                           // 运行模式
+	LogFileName       string         = "xdpEngine.log" // 日志文件
+	ServerPort        int            = 1888            // 服务监听端口
+	ServerPortStr                    = strconv.Itoa(ServerPort)
+	ProtoRuleFile                    = "systemConfig/rule.json" // 协议规则文件
+	ProtoEngineStatus bool           = false
+	DefaultIface      string         = "ens33"          // 默认监听网口
+	DefaultChanNum    int            = runtime.NumCPU() // 缓冲池中channel数量为CPU核心数
+	DefaultChanLength int            = 999999           // 缓冲池中channel数量为CPU核心数
+	Func2flag                        = map[string]uint32{
+		"proto": 111, // 协议
+	}
 )
 
 func init() {

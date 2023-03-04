@@ -2,16 +2,18 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"os"
+	"strings"
 	"xdpEngine/dpiEngine"
 	"xdpEngine/routers"
 	"xdpEngine/systemConfig"
 	"xdpEngine/xdp"
 )
 
-var iface = flag.String("i", systemConfig.DefaultIface, "绑定的网卡名, eg: ens33")
-var runMode = flag.String("M", "debug", "是否调试模式, debug->debug模式; release->release模式; test->test模式")
+var iface = flag.String("i", systemConfig.DefaultIface, "绑定的网卡名, eg: ens33/\"ens33 ens34\"")
+var runMode = flag.String("m", "debug", "是否调试模式, debug->debug模式; release->release模式; test->test模式")
 
 func main() {
 	defer systemConfig.SayBye()
@@ -25,27 +27,30 @@ func main() {
 	} else if *runMode == "test" {
 		gin.SetMode(gin.TestMode) // 测试模式
 	} else {
-		systemConfig.Errlog.Fatalln("-d, 参数错误, 退出...")
+		systemConfig.Errlog.Fatalln("-m, 参数错误, 退出...")
 	}
 
-	xdp.InitEBpfMap(*iface) // 获取ebpf maps
-	go xdp.ListenExit()     // 监听退出信号
-	dpiEngine.StartProtoEngine()
-
+	fmt.Println(*iface)
+	for _, iface := range strings.Split(*iface, " ") {
+		xdp.InitEBpfMap(iface) // 获取ebpf maps
+		dpiEngine.StartProtoEngine()
+	}
+	go xdp.ListenExit() // 监听退出信号
+	//
 	engine := gin.Default()
 	routers.InitRouters(engine)
 
 	go func() {
 		if err := engine.Run(":" + systemConfig.ServerPortStr); err != nil {
 			systemConfig.Errlog.Println("Gin start error:", err)
-			xdp.DetachIfaceXdp()
+			xdp.StopAllXdpEngine()
 			os.Exit(-1)
 		}
 	}()
 
 	select {
 	case <-systemConfig.CtrlC:
-		xdp.DetachIfaceXdp()
+		xdp.StopAllXdpEngine()
 		systemConfig.Logger.Println("再见!")
 	}
 }

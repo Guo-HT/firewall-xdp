@@ -16,4 +16,9 @@ func InitRouters(engine *gin.Engine) {
 		ProtoApiGroup(FuncApiGroup)
 	}
 
+	NetcardApiGroup := engine.Group("/iface")
+	{
+		IfaceApiGroup(NetcardApiGroup)
+	}
+
 }

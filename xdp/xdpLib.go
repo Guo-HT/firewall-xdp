@@ -41,9 +41,9 @@ type IfaceXdpObj struct {
 	/*
 		SessionFlow:
 		会话流表，其中
-		key: 会话中请求IP、Port、响应IP、port四元组;
+		key: 会话中响应IP、port二元组（服务端IP-PORT）;
 		eg: 会话中，192.168.113.128发送请求，192.168.113.1回复响应，
-			则key: "192.168.113.128_46544_192.168.113.1_80"
+			则key: "192.168.113.1_80"
 	*/
 	SessionFlow map[string]*utils.SessionTuple
 
@@ -65,11 +65,16 @@ type IfaceXdpObj struct {
 	通过clang编译得到的.elf文件，获取内部的map和program，并挂载到指定网卡
 */
 func InitEBpfMap(iface string) {
+	isExist := utils.IsIfaceExist(iface)
+	if !isExist {
+		errlog.Println("该网卡不存在")
+		return
+	}
 
 	bpf := goebpf.NewDefaultEbpfSystem()
 	err := bpf.LoadElf(XDP_FILE)
 	if err != nil {
-		logger.Fatalf("LoadElf() failed: %v\n", err)
+		errlog.Fatalf("LoadElf() failed: %v\n", err)
 	}
 	printBpfInfo(bpf)
 
@@ -128,7 +133,7 @@ func InitEBpfMap(iface string) {
 	// Load XDP program into kernel
 	err = xdp.Load()
 	if err != nil {
-		logger.Fatalf("xdp.Load(): %v\n", err)
+		errlog.Fatalf("xdp.Load(): %v\n", err)
 	} else {
 		//logger.Println("xdp.Load() success")
 	}
@@ -138,7 +143,7 @@ func InitEBpfMap(iface string) {
 	// Attach to interface
 	err = xdp.Attach(iface)
 	if err != nil {
-		logger.Fatalf("xdp.Attach(): %v\n", err)
+		errlog.Fatalf("xdp.Attach(): %v\n", err)
 	} else {
 		//logger.Println("xdp.Attach() success")
 	}
@@ -158,12 +163,12 @@ func InitEBpfMap(iface string) {
 
 	poolList := make([]chan utils.FiveTuple, systemConfig.DefaultChanNum)
 	for i := 0; i < systemConfig.DefaultChanNum; i++ {
-		poolList[i] = make(chan utils.FiveTuple, 10000)
+		poolList[i] = make(chan utils.FiveTuple, systemConfig.DefaultChanLength)
 	}
 	sessionFlow := make(map[string]*utils.SessionTuple)
 	_ = SetFunctionSwitch("proto", "stop")
 
-	IfaceXdpDict[iface] = &IfaceXdpObj{
+	thisXdpObj := IfaceXdpObj{
 		Iface:             iface,
 		WhitePortMap:      mapWhitePort,
 		BlackPortMap:      mapBlackPort,
@@ -179,7 +184,7 @@ func InitEBpfMap(iface string) {
 		BlackIpList:   []string{},
 
 		SessionFlow:      sessionFlow,
-		ProtoSwitch:      false,
+		ProtoSwitch:      systemConfig.ProtoEngineStatus,
 		ProtoPoolChannel: poolList,
 
 		ChannelListLength: systemConfig.DefaultChanNum,
@@ -190,6 +195,7 @@ func InitEBpfMap(iface string) {
 		Ctx:    ctx,
 		Cancel: cancel,
 	}
+	IfaceXdpDict[iface] = &thisXdpObj
 	_ = InsertWhitePortMap([]int{systemConfig.ServerPort}, iface) // 引擎服务端口加白
 }
 
@@ -217,30 +223,43 @@ func DetachRestXdp() {
 		logger.Println("GetIfaceList error: ", err)
 	}
 	for _, iface := range interfaces {
-		// ip link set dev ens33 xdp off
-		cmd := exec.Command("ip", "link", "set", "dev", iface, "xdp", "off")
-		if err := cmd.Start(); err != nil {
-			logger.Println("DetachRestXdp in starting xdpEngine error:", err)
-		}
+		DetachXdp(iface)
 	}
 }
 
-// DetachIfaceXdp 卸载已挂载的xdp程序
-func DetachIfaceXdp() {
-	for Iface, value := range IfaceXdpDict {
-		logger.Printf("[%s]XDP程序正在卸载...", Iface)
-		_ = value.WhitePortMap.Close()
-		_ = value.BlackPortMap.Close()
-		_ = value.WhiteIpMap.Close()
-		_ = value.BlackIpMap.Close()
-		_ = value.FunctionSwitchMap.Close()
-		_ = value.FirewallProgram.Detach()
-		for _, channel := range value.ProtoPoolChannel {
-			close(channel)
-		}
-		value.CancelP()
-		value.Cancel()
-		value.SessionFlow = make(map[string]*utils.SessionTuple)
-		logger.Printf("[%s]XDP程序卸载完成...", Iface)
+// DetachXdp 卸载指定网卡上的XDP
+func DetachXdp(iface string) {
+	// ip link set dev ens33 xdp off
+	cmd := exec.Command("ip", "link", "set", "dev", iface, "xdp", "off")
+	if err := cmd.Start(); err != nil {
+		logger.Println("DetachRestXdp in starting xdpEngine error:", err)
 	}
+}
+
+// StopAllXdpEngine 卸载已挂载的xdp程序
+func StopAllXdpEngine() {
+	for Iface, value := range IfaceXdpDict {
+		StopXdpEngine(Iface, value)
+	}
+}
+
+// StopXdpEngine 关闭指定网卡的xdp程序
+func StopXdpEngine(iface string, value *IfaceXdpObj) {
+	logger.Printf("[%s]XDP程序正在卸载...", iface)
+	_ = value.WhitePortMap.Close()
+	_ = value.BlackPortMap.Close()
+	_ = value.WhiteIpMap.Close()
+	_ = value.BlackIpMap.Close()
+	_ = value.FunctionSwitchMap.Close()
+	_ = value.ProtoDetectMap.Close()
+	_ = value.FirewallProgram.Detach()
+	for _, channel := range value.ProtoPoolChannel {
+		close(channel)
+	}
+	value.CancelP()
+	value.Cancel()
+	value.SessionFlow = make(map[string]*utils.SessionTuple)
+	delete(IfaceXdpDict, iface)
+	DetachXdp(iface)
+	logger.Printf("[%s]XDP程序卸载完成...", iface)
 }

@@ -33,3 +33,14 @@ func UpIfaceState(Iface string) {
 		logger.Println("UpIfaceState in starting xdpEngine error:", err)
 	}
 }
+
+// IsIfaceExist 判断传入参数是否为存在的网卡名
+func IsIfaceExist(iface string) (isExist bool) {
+	interfaces, _ := GetIfaceList()
+	for _, thisIface := range interfaces {
+		if thisIface == iface {
+			return true
+		}
+	}
+	return false
+}

@@ -2,7 +2,6 @@ package xdp
 
 import (
 	"errors"
-	"fmt"
 	"github.com/dropbox/goebpf"
 	"os"
 	"strconv"
@@ -12,11 +11,12 @@ import (
 )
 
 func ListenExit() {
-	logger.Println("开始监听系统退出信号...")
+	logger.Println("[!] 开始监听系统退出信号...")
+	logger.Println("[!] Ctrl+C 退出引擎")
 	for {
 		select {
 		case <-CtrlC:
-			DetachIfaceXdp()
+			StopAllXdpEngine()
 			os.Exit(0)
 		}
 	}
@@ -480,7 +480,6 @@ func GetAllProtoIpPortMap() (ipPortList []utils.IpPort) {
 		}
 		IfaceXdpDict[iface].Lock.RUnlock()
 	}
-	fmt.Println(ipPortList)
 	return
 }
 
@@ -496,7 +495,7 @@ func SetFunctionSwitch(funcName string, mode string) (err error) {
 	var modeFlag uint32   // 开关状态标识
 	switch funcName {
 	case "proto":
-		switchFlag = 111
+		switchFlag = systemConfig.Func2flag[funcName]
 		if mode == "start" {
 			modeFlag = 1 // 协议开->1
 		} else {
@@ -519,4 +518,21 @@ func SetFunctionSwitch(funcName string, mode string) (err error) {
 		}
 	}
 	return
+}
+
+// GetFunctionSwitch 从Map中获取分析功能开关状态
+func GetFunctionSwitch(funcName string, iface string) (status int, err error) {
+	switchFlag := systemConfig.Func2flag[funcName] // map中对应的key标识
+	switch funcName {
+	case "proto":
+		status, err := IfaceXdpDict[iface].FunctionSwitchMap.LookupInt(switchFlag)
+		if err != nil {
+			errlog.Printf("[%s]获取%s开关状态失败, 默认返回0, %v", iface, funcName, err)
+			return 0, nil
+		}
+		return status, nil
+	default:
+		err = errors.New("暂无此功能")
+		return
+	}
 }

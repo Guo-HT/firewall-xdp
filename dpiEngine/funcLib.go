@@ -8,6 +8,7 @@ import (
 	"xdpEngine/xdp"
 )
 
+// StartProtoEngine 开启所有引擎的协议检测
 func StartProtoEngine() {
 	for iface, xdpObj := range xdp.IfaceXdpDict {
 		// 循环开启各个网口的协议分析功能
@@ -19,6 +20,7 @@ func StartProtoEngine() {
 	}
 }
 
+// decodePacket 解析报文
 func decodePacket(Iface string, pkt gopacket.Packet) (key *utils.FiveTuple) {
 	ipv4, ok := pkt.NetworkLayer().(*layers.IPv4)
 	if !ok {
@@ -45,6 +47,16 @@ func decodePacket(Iface string, pkt gopacket.Packet) (key *utils.FiveTuple) {
 		stream.LayerTcp = t
 		stream.Iface = Iface
 		return &stream
+	}
+	return
+}
+
+// GetStartingProto 获取所有开启分析的协议名
+func GetStartingProto() (rules []string) {
+	for _, value := range ProtoRuleList {
+		if value.IsEnable {
+			rules = append(rules, value.ProtocolName)
+		}
 	}
 	return
 }
