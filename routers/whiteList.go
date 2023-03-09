@@ -17,7 +17,7 @@ func WhiteApiGroup(router *gin.RouterGroup) {
 		WhiteListRG.POST("/setPort", controllers.SetWhitePort)
 		WhiteListRG.POST("/setIP", controllers.SetWhiteIP)
 
-		WhiteListRG.DELETE("/delPort", controllers.DelWhitePort)
-		WhiteListRG.DELETE("/delIP", controllers.DelWhiteIP)
+		WhiteListRG.POST("/delPort", controllers.DelWhitePort)
+		WhiteListRG.POST("/delIP", controllers.DelWhiteIP)
 	}
 }

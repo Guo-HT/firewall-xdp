@@ -1,0 +1,15 @@
+body{
+    padding:15px;
+}
+
+.my-black-port-container{
+    padding-top: 10px;
+}
+
+.layui-input-inline{
+    margin-right:20px;
+}
+.add-black-port{
+    color: #03037e;
+    cursor: pointer;
+}

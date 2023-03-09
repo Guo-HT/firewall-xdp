@@ -1,0 +1,78 @@
+{{ define "web/index.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>xdpEngine</title>
+    <link rel="stylesheet" href="/web/static/layui/css/layui.css">
+    <script src="/web/static/layui/layui.js"></script>
+    <script src="/web/static/js/jquery-1.12.4.min.js"></script>
+    <link rel="stylesheet" href="/web/static/css/index.css">
+    <script src="/web/static/js/index.js"></script>
+</head>
+<body>
+<div class="layui-layout layui-layout-admin">
+    <!-- 头部 start -->
+    <div class="layui-header">
+        <div class="layui-logo layui-hide-xs my-header-logo"><img src="/web/static/images/firewall.png">&nbsp;&nbsp;这是一个防火墙
+        </div>
+        <ul class="layui-nav my-nav-top" lay-filter="">
+            <!--            <li class="layui-nav-item layui-this"><a href=""><img src="/web/static/images/firewall.png">&nbsp;&nbsp;这是一个防火墙</a></li>-->
+            <li class="layui-nav-item nav-right">
+                <a href="javascript:void(0);"><i class="layui-icon layui-icon-username" style="font-size:14px;"></i>&nbsp;&nbsp;我的</a>
+                <dl class="layui-nav-child"> <!-- 二级菜单 -->
+                    <dd><a href="javascript:void(0);">修改密码</a></dd>
+                    <dd><a href="javascript:void(0);">注销</a></dd>
+                    <dd><a href="javascript:void(0);">关于</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+    <!-- 头部 end -->
+
+    <!-- 侧边 start -->
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <ul class="layui-nav layui-nav-tree layui-nav-side my-nav-side" lay-filter="test">
+                <li class="layui-nav-item"><a href="javascript:void(0);" class="my-page-nav" goto="overview">概览</a>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:void(0);">黑名单</a>
+                    <dl class="layui-nav-child layui-nav-child-c">
+                        <dd><a href="javascript:void(0);" class="my-page-nav" goto="black_ip">IP地址</a></dd>
+                        <dd><a href="javascript:void(0);" class="my-page-nav" goto="black_port">端口</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:void(0);">白名单</a>
+                    <dl class="layui-nav-child layui-nav-child-c">
+                        <dd><a href="javascript:void(0);" class="my-page-nav" goto="white_ip">IP地址</a></dd>
+                        <dd><a href="javascript:void(0);" class="my-page-nav" goto="white_port">端口</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item"><a href="javascript:void(0);" class="my-page-nav" goto="protocol">协议</a>
+                </li>
+                <li class="layui-nav-item"><a href="javascript:void(0);" class="my-page-nav" goto="settings">设置</a>
+                </li>
+                <li class="layui-nav-item"><a href="javascript:void(0);" class="my-page-nav"
+                                              goto="system_log">系统日志</a></li>
+            </ul>
+        </div>
+    </div>
+    <!-- 侧边 end -->
+
+    <!-- 内容主体区域 start -->
+    <div class="layui-body">
+        <iframe src="" frameborder="0" id="my-main-iframe" class="my-main-iframe"></iframe>
+    </div>
+    <!-- 内容主体区域 end -->
+
+    <!-- 底部固定区域 start -->
+    <div class="layui-footer">
+        底部固定区域
+    </div>
+    <!-- 底部固定区域 end -->
+</div>
+</body>
+</html>
+{{ end }}

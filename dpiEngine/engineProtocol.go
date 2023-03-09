@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -17,10 +16,9 @@ import (
 
 // GetPacketFromChannel 从指定网卡的缓冲队列中读出数据进行分析
 func GetPacketFromChannel(iface string) {
-	chanLength := xdp.IfaceXdpDict[iface].ChannelListLength
 	fromIndex := 0
 	for {
-		fromIndex = fromIndex % chanLength // 负载均衡
+		fromIndex = fromIndex % xdp.IfaceXdpDict[iface].ChannelListLength // 负载均衡
 		select {
 		case key := <-xdp.IfaceXdpDict[iface].ProtoPoolChannel[fromIndex]:
 			go analyse(key, iface)
@@ -52,7 +50,7 @@ func analyse(key utils.FiveTuple, iface string) {
 			resultRsp := reRsp.Find(key.Payload)
 			if len(resultReq) != 0 {
 				// 请求
-				fmt.Printf("[!]识别到%s请求: %s:%d - %s:%d\n", rule.ProtocolName, key.SrcAddr, key.SrcPort, key.DstAddr, key.DstPort)
+				logger.Printf("[!]识别到%s请求: %s:%d - %s:%d\n", rule.ProtocolName, key.SrcAddr, key.SrcPort, key.DstAddr, key.DstPort)
 				target := key.DstAddr + "_" + strconv.Itoa(key.DstPort)
 				if _, ok := xdp.IfaceXdpDict[iface].SessionFlow[target]; ok {
 					// 如果会话流表中已经存在
@@ -62,7 +60,7 @@ func analyse(key utils.FiveTuple, iface string) {
 						if xdp.IfaceXdpDict[iface].SessionFlow[target].HitReq && xdp.IfaceXdpDict[iface].SessionFlow[target].HitRsp {
 							// 如果请求和响应都命中，更新最近一次命中时间，并下发策略
 							xdp.IfaceXdpDict[iface].SessionFlow[target].UpdateTime = time.Now().UnixNano()
-							fmt.Println("开始阻断：", target)
+							logger.Println("开始阻断：", target)
 							xdp.UpdateProtoIpPortMap()
 						}
 					}
@@ -76,9 +74,10 @@ func analyse(key utils.FiveTuple, iface string) {
 						UpdateTime: 9999999999, // 10位
 					}
 				}
-			} else if len(resultRsp) != 0 {
+			}
+			if len(resultRsp) != 0 {
 				// 响应
-				fmt.Printf("[!]识别到%s响应: %s:%d - %s:%d\n", rule.ProtocolName, key.SrcAddr, key.SrcPort, key.DstAddr, key.DstPort)
+				logger.Printf("[!]识别到%s响应: %s:%d - %s:%d\n", rule.ProtocolName, key.SrcAddr, key.SrcPort, key.DstAddr, key.DstPort)
 				target := key.SrcAddr + "_" + strconv.Itoa(key.SrcPort)
 				if _, ok := xdp.IfaceXdpDict[iface].SessionFlow[target]; ok {
 					// 如果会话流表中已经存在
@@ -88,7 +87,7 @@ func analyse(key utils.FiveTuple, iface string) {
 						if xdp.IfaceXdpDict[iface].SessionFlow[target].HitRsp && xdp.IfaceXdpDict[iface].SessionFlow[target].HitReq {
 							// 如果响应和请求都命中，更新最近一次命中时间，并下发策略
 							xdp.IfaceXdpDict[iface].SessionFlow[target].UpdateTime = time.Now().UnixNano()
-							fmt.Println("开始阻断：", target)
+							logger.Println("开始阻断：", target)
 							xdp.UpdateProtoIpPortMap()
 						}
 					}

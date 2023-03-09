@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"os"
 	"strings"
@@ -30,13 +29,12 @@ func main() {
 		systemConfig.Errlog.Fatalln("-m, 参数错误, 退出...")
 	}
 
-	fmt.Println(*iface)
 	for _, iface := range strings.Split(*iface, " ") {
 		xdp.InitEBpfMap(iface) // 获取ebpf maps
 		dpiEngine.StartProtoEngine()
 	}
 	go xdp.ListenExit() // 监听退出信号
-	//
+
 	engine := gin.Default()
 	routers.InitRouters(engine)
 

@@ -51,7 +51,7 @@ func InsertWhitePortMap(portList []int, iface string) (err error) {
 }
 
 // GetAllWhitePortMap 从Map中获取Port白名单
-func GetAllWhitePortMap(iface string) (portList []int, err error) {
+func GetAllWhitePortMap(iface string) (portList []utils.PortHitCount, err error) {
 	defer func() {
 
 	}()
@@ -62,13 +62,30 @@ func GetAllWhitePortMap(iface string) (portList []int, err error) {
 
 		nextKey, err := IfaceXdpDict[iface].WhitePortMap.GetNextKeyInt("") // 获取第一个
 		if err == nil {
-			portList = utils.AppendPortListDeduplicate(portList, []int{nextKey})
+			hitCount, err := IfaceXdpDict[iface].WhitePortMap.LookupInt(nextKey)
+			if err != nil {
+				hitCount = 0
+			}
+			thisPort := utils.PortHitCount{
+				Port: nextKey,
+				Hit:  hitCount,
+			}
+			//portList = utils.AppendPortListDeduplicate(portList, []int{nextKey})
+			portList = utils.AppendPortHitListDeduplicate(portList, []utils.PortHitCount{thisPort})
 			for {
 				nextKey, err = IfaceXdpDict[iface].WhitePortMap.GetNextKeyInt(nextKey)
 				if err != nil {
 					break
 				}
-				portList = utils.AppendPortListDeduplicate(portList, []int{nextKey})
+				hitCount, err := IfaceXdpDict[iface].WhitePortMap.LookupInt(nextKey)
+				if err != nil {
+					hitCount = 0
+				}
+				thisPort = utils.PortHitCount{
+					Port: nextKey,
+					Hit:  hitCount,
+				}
+				portList = utils.AppendPortHitListDeduplicate(portList, []utils.PortHitCount{thisPort})
 			}
 		}
 	} else {
@@ -136,7 +153,7 @@ func InsertBlackPortMap(portList []int, iface string) (err error) {
 }
 
 // GetAllBlackPortMap 从Map中获取Port黑名单
-func GetAllBlackPortMap(iface string) (portList []int, err error) {
+func GetAllBlackPortMap(iface string) (portList []utils.PortHitCount, err error) {
 	defer func() {
 
 	}()
@@ -147,13 +164,29 @@ func GetAllBlackPortMap(iface string) (portList []int, err error) {
 
 		nextKey, err := IfaceXdpDict[iface].BlackPortMap.GetNextKeyInt("") // 获取第一个
 		if err == nil {
-			portList = utils.AppendPortListDeduplicate(portList, []int{nextKey})
+			hitCount, err := IfaceXdpDict[iface].BlackPortMap.LookupInt(nextKey)
+			if err != nil {
+				hitCount = 0
+			}
+			thisPort := utils.PortHitCount{
+				Port: nextKey,
+				Hit:  hitCount,
+			}
+			portList = utils.AppendPortHitListDeduplicate(portList, []utils.PortHitCount{thisPort})
 			for {
 				nextKey, err = IfaceXdpDict[iface].BlackPortMap.GetNextKeyInt(nextKey)
 				if err != nil {
 					break
 				}
-				portList = utils.AppendPortListDeduplicate(portList, []int{nextKey})
+				hitCount, err := IfaceXdpDict[iface].BlackPortMap.LookupInt(nextKey)
+				if err != nil {
+					hitCount = 0
+				}
+				thisPort := utils.PortHitCount{
+					Port: nextKey,
+					Hit:  hitCount,
+				}
+				portList = utils.AppendPortHitListDeduplicate(portList, []utils.PortHitCount{thisPort})
 			}
 		}
 	} else {
@@ -238,7 +271,7 @@ func InsertWhiteIpMap(ipList []string, iface string) (err error) {
 }
 
 // GetAllWhiteIpMap 从Map中获取IP白名单
-func GetAllWhiteIpMap(iface string) (ipList []string, err error) {
+func GetAllWhiteIpMap(iface string) (ipList []utils.IpHitCount, err error) {
 	defer func() {
 
 	}()
@@ -253,9 +286,17 @@ func GetAllWhiteIpMap(iface string) (ipList []string, err error) {
 				//errlog.Println("GetAllWhiteIpMap GetNextKey error:", err)
 				break
 			}
+			hitCount, err := IfaceXdpDict[iface].WhiteIpMap.LookupInt(nextKey)
+			if err != nil {
+				hitCount = 0
+			}
 			ipString := utils.IpFormat(nextKey)
+			thisIP := utils.IpHitCount{
+				IP:  ipString,
+				Hit: hitCount,
+			}
 			logger.Println("获取白名单IP,", ipString)
-			ipList = append(ipList, ipString)
+			ipList = append(ipList, thisIP)
 			nextKey, err = IfaceXdpDict[iface].WhiteIpMap.GetNextKey(nextKey)
 			if err != nil {
 				errlog.Println("GetAllWhiteIpMap GetNextKey error:", err)
@@ -343,7 +384,7 @@ func InsertBlackIpMap(ipList []string, iface string) (err error) {
 }
 
 // GetAllBlackIpMap 从Map中获取IP黑名单
-func GetAllBlackIpMap(iface string) (ipList []string, err error) {
+func GetAllBlackIpMap(iface string) (ipList []utils.IpHitCount, err error) {
 	defer func() {
 
 	}()
@@ -358,9 +399,17 @@ func GetAllBlackIpMap(iface string) (ipList []string, err error) {
 				//errlog.Println("GetAllBlackIpMap GetNextKey error:", err)
 				break
 			}
+			hitCount, err := IfaceXdpDict[iface].BlackIpMap.LookupInt(nextKey)
+			if err != nil {
+				hitCount = 0
+			}
 			ipString := utils.IpFormat(nextKey)
+			thisIP := utils.IpHitCount{
+				IP:  ipString,
+				Hit: hitCount,
+			}
 			logger.Println("获取黑名单IP,", ipString)
-			ipList = append(ipList, ipString)
+			ipList = append(ipList, thisIP)
 			nextKey, err = IfaceXdpDict[iface].BlackIpMap.GetNextKey(nextKey)
 			if err != nil {
 				errlog.Println("GetAllBlackIpMap GetNextKey error:", err)

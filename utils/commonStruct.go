@@ -79,3 +79,15 @@ type IpPort struct {
 	IP   string `json:"ip"`
 	Port int    `json:"port"`
 }
+
+// PortHitCount Port及命中次数
+type PortHitCount struct {
+	Port int `json:"port"`
+	Hit  int `json:"hit"`
+}
+
+// IpHitCount Port及命中次数
+type IpHitCount struct {
+	IP  string `json:"ip"`
+	Hit int    `json:"hit"`
+}

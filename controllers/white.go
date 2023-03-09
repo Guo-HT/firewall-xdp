@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"runtime/debug"
+	"sort"
+	"strconv"
 	"xdpEngine/systemConfig"
 	"xdpEngine/utils"
 	"xdpEngine/xdp"
@@ -24,6 +26,19 @@ func GetWhitePort(c *gin.Context) {
 		}
 	}()
 	iface := c.Query("iface")
+	pageNoStr := c.Query("page_no")
+	pageSizeStr := c.Query("page_size")
+	pageNo, err := strconv.Atoi(pageNoStr)
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil {
+		errlog.Println("GetBlackPort error: 请求参数错误")
+		c.JSON(http.StatusOK, gin.H{
+			"code": 400,
+			"msg":  "请求参数错误",
+			"data": []int{},
+		})
+		return
+	}
 	whitePortList, err := xdp.GetAllWhitePortMap(iface)
 	if err != nil {
 		errlog.Println("Port白名单获取失败,", err)
@@ -34,10 +49,23 @@ func GetWhitePort(c *gin.Context) {
 		})
 		return
 	}
+	//sort.Ints(whitePortList) // 先排序，后分页
+	sort.SliceStable(whitePortList, func(i, j int) bool {
+		if whitePortList[i].Hit > whitePortList[j].Hit {
+			return true
+		}
+		return false
+	})
+	data, pNo, pSize := utils.IntIntStructListLimit(whitePortList, pageNo, pageSize)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Port白名单获取成功",
-		"data": whitePortList,
+		"data": gin.H{
+			"page_no":   pNo,
+			"page_size": pSize,
+			"total":     len(whitePortList),
+			"data":      data,
+		},
 	})
 	return
 }
@@ -151,6 +179,19 @@ func GetWhiteIP(c *gin.Context) {
 		}
 	}()
 	iface := c.Query("iface")
+	pageNoStr := c.Query("page_no")
+	pageSizeStr := c.Query("page_size")
+	pageNo, err := strconv.Atoi(pageNoStr)
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil {
+		errlog.Println("GetWhiteIP error: 请求参数错误")
+		c.JSON(http.StatusOK, gin.H{
+			"code": 400,
+			"msg":  "请求参数错误",
+			"data": []int{},
+		})
+		return
+	}
 	whiteIpList, err := xdp.GetAllWhiteIpMap(iface)
 	if err != nil {
 		errlog.Println("IP白名单获取失败,", err)
@@ -161,10 +202,23 @@ func GetWhiteIP(c *gin.Context) {
 		})
 		return
 	}
+	//sort.Sort(whiteIpList)
+	sort.SliceStable(whiteIpList, func(i, j int) bool {
+		if whiteIpList[i].Hit > whiteIpList[j].Hit {
+			return true
+		}
+		return false
+	})
+	data, pNo, pSize := utils.StringIntStructListLimit(whiteIpList, pageNo, pageSize)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "IP白名单获取成功",
-		"data": whiteIpList,
+		"data": gin.H{
+			"page_no":   pNo,
+			"page_size": pSize,
+			"total":     len(whiteIpList),
+			"data":      data,
+		},
 	})
 	return
 }

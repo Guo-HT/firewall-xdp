@@ -203,6 +203,8 @@ int firewall(struct xdp_md *ctx)
         int *lookup_port_white = bpf_map_lookup_elem(&white_port, &dst_port);
         if(lookup_port_white){
             bpfprint("[!] Hitted! port White...");
+            (*lookup_port_white)++;
+            bpf_map_update_elem(&white_port, &dst_port, lookup_port_white, BPF_ANY);
             return XDP_PASS;
         }
 
@@ -211,6 +213,8 @@ int firewall(struct xdp_md *ctx)
         int *lookup_ip_white = bpf_map_lookup_elem(&white_ip, &key);
         if(lookup_ip_white){
             bpfprint("[!] Hitted! ip White...");
+            (*lookup_ip_white)++;
+            bpf_map_update_elem(&white_ip, &key, lookup_ip_white, BPF_ANY);
             return XDP_PASS;
         }
 
@@ -218,6 +222,8 @@ int firewall(struct xdp_md *ctx)
         int *lookup_port_black = bpf_map_lookup_elem(&black_port, &dst_port);
         if(lookup_port_black){
             bpfprint("[!] Hitted! port Black...");
+            (*lookup_port_black)++;
+            bpf_map_update_elem(&black_port, &dst_port, lookup_port_black, BPF_ANY);
             return XDP_DROP;
         }
 
@@ -226,6 +232,8 @@ int firewall(struct xdp_md *ctx)
         int *lookup_ip_black = bpf_map_lookup_elem(&black_ip, &key);
         if(lookup_ip_black){
             bpfprint("[!] Hitted! ip Black...");
+            (*lookup_ip_black)++;
+            bpf_map_update_elem(&black_ip, &key, lookup_ip_black, BPF_ANY);
             return XDP_DROP;
         }
 

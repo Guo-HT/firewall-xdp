@@ -16,6 +16,8 @@ var (
 	Errlog            *log.Logger                      // 错误日志
 	CtrlC             chan os.Signal                   // 退出信号
 	RunMode           string                           // 运行模式
+	AESKey            string         = "firewall"      // 全局AES加密密钥
+	DBPath            string         = "xdpEngine.db"  // sqlite3数据库文件
 	LogFileName       string         = "xdpEngine.log" // 日志文件
 	ServerPort        int            = 1888            // 服务监听端口
 	ServerPortStr                    = strconv.Itoa(ServerPort)

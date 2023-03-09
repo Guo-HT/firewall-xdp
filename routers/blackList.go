@@ -15,7 +15,7 @@ func BlackApiGroup(router *gin.RouterGroup) {
 		BlackListRG.POST("/setPort", controllers.SetBlackPort)
 		BlackListRG.POST("/setIP", controllers.SetBlackIP)
 
-		BlackListRG.DELETE("/delPort", controllers.DelBlackPort)
-		BlackListRG.DELETE("/delIP", controllers.DelBlackIP)
+		BlackListRG.POST("/delPort", controllers.DelBlackPort)
+		BlackListRG.POST("/delIP", controllers.DelBlackIP)
 	}
 }

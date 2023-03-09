@@ -1,0 +1,14 @@
+body{
+    padding:15px;
+}
+
+.my-black-ip-container{
+    padding-top: 10px;
+}
+.layui-input-inline{
+    margin-right:20px;
+}
+.add-black-ip{
+    color: #03037e;
+    cursor: pointer;
+}

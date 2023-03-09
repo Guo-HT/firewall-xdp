@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"runtime/debug"
+	"sort"
+	"strconv"
 	"xdpEngine/utils"
 	"xdpEngine/xdp"
 )
@@ -24,6 +26,19 @@ func GetBlackPort(c *gin.Context) {
 		}
 	}()
 	iface := c.Query("iface")
+	pageNoStr := c.Query("page_no")
+	pageSizeStr := c.Query("page_size")
+	pageNo, err := strconv.Atoi(pageNoStr)
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil {
+		errlog.Println("GetBlackPort error: 请求参数错误")
+		c.JSON(http.StatusOK, gin.H{
+			"code": 400,
+			"msg":  "请求参数错误",
+			"data": []int{},
+		})
+		return
+	}
 	blackPortList, err := xdp.GetAllBlackPortMap(iface)
 	if err != nil {
 		errlog.Println("Port黑名单获取失败,", err)
@@ -34,11 +49,24 @@ func GetBlackPort(c *gin.Context) {
 		})
 		return
 	}
+	//sort.Ints(blackPortList) // 先排序，后分页
+	sort.SliceStable(blackPortList, func(i, j int) bool {
+		if blackPortList[i].Hit > blackPortList[j].Hit {
+			return true
+		}
+		return false
+	})
+	data, pNo, pSize := utils.IntIntStructListLimit(blackPortList, pageNo, pageSize)
 	//logger.Println(blackPortList)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Port黑名单获取成功",
-		"data": blackPortList,
+		"data": gin.H{
+			"page_no":   pNo,
+			"page_size": pSize,
+			"total":     len(blackPortList),
+			"data":      data,
+		},
 	})
 	return
 }
@@ -151,6 +179,19 @@ func GetBlackIP(c *gin.Context) {
 		}
 	}()
 	iface := c.Query("iface")
+	pageNoStr := c.Query("page_no")
+	pageSizeStr := c.Query("page_size")
+	pageNo, err := strconv.Atoi(pageNoStr)
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil {
+		errlog.Println("GetBlackIP error: 请求参数错误")
+		c.JSON(http.StatusOK, gin.H{
+			"code": 400,
+			"msg":  "请求参数错误",
+			"data": []int{},
+		})
+		return
+	}
 	blackIpList, err := xdp.GetAllBlackIpMap(iface)
 	if err != nil {
 		errlog.Println("IP黑名单获取失败,", err)
@@ -161,10 +202,23 @@ func GetBlackIP(c *gin.Context) {
 		})
 		return
 	}
+	//sort.Strings(blackIpList)
+	sort.SliceStable(blackIpList, func(i, j int) bool {
+		if blackIpList[i].Hit > blackIpList[j].Hit {
+			return true
+		}
+		return false
+	})
+	data, pNo, pSize := utils.StringIntStructListLimit(blackIpList, pageNo, pageSize)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "IP黑名单获取成功",
-		"data": blackIpList,
+		"data": gin.H{
+			"page_no":   pNo,
+			"page_size": pSize,
+			"total":     len(blackIpList),
+			"data":      data,
+		},
 	})
 	return
 }

@@ -40,6 +40,48 @@ func IsStrInList(target string, list []string) (result bool) {
 	return false
 }
 
+// AppendPortHitListDeduplicate 去重写入列表(源IP-Hit): 源列表，待插入列表
+func AppendPortHitListDeduplicate(rawData, insertData []PortHitCount) (appendData []PortHitCount) {
+	for _, insertValue := range insertData {
+		if !IsPortHitCountInList(insertValue, rawData) {
+			rawData = append(rawData, insertValue)
+		}
+	}
+	return rawData
+}
+
+// IsPortHitCountInList 判断Port-Hit是否存在于数组中
+func IsPortHitCountInList(target PortHitCount, list []PortHitCount) (result bool) {
+	for _, value := range list {
+		if target == value {
+			return true
+		}
+	}
+	return false
+}
+
+// AppendIpHitListDeduplicate 去重写入列表(源IP-Hit): 源列表，待插入列表
+func AppendIpHitListDeduplicate(rawData, insertData []IpHitCount) (appendData []IpHitCount) {
+	for _, insertValue := range insertData {
+		if !IsIpHitCountInList(insertValue, rawData) {
+			rawData = append(rawData, insertValue)
+		}
+	}
+	return rawData
+}
+
+// IsIpHitCountInList 判断IP-Hit是否存在于数组中
+func IsIpHitCountInList(target IpHitCount, list []IpHitCount) (result bool) {
+	for _, value := range list {
+		if target == value {
+			return true
+		}
+	}
+	return false
+}
+
+//--------------------- 删除 ------------------------
+
 // DeletePortList 删除母列表中的子列表
 func DeletePortList(rawData, deleteData []int) (resultData []int) {
 	for _, eachData := range deleteData {

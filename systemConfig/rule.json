@@ -10,6 +10,17 @@
       "start_port": 0,
       "end_port": 65535,
       "is_enable": true
+    },
+    {
+      "id": 1,
+      "protocol_name": "SSH",
+      "req_type": "string",
+      "req_regx": "^SSH-2\\.0.*",
+      "rsp_type": "string",
+      "rsp_regx": "^SSH-2\\.0.*",
+      "start_port": 1,
+      "end_port": 65535,
+      "is_enable": true
     }
   ]
 }

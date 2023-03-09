@@ -253,10 +253,10 @@ func StopXdpEngine(iface string, value *IfaceXdpObj) {
 	_ = value.FunctionSwitchMap.Close()
 	_ = value.ProtoDetectMap.Close()
 	_ = value.FirewallProgram.Detach()
+	value.CancelP()
 	for _, channel := range value.ProtoPoolChannel {
 		close(channel)
 	}
-	value.CancelP()
 	value.Cancel()
 	value.SessionFlow = make(map[string]*utils.SessionTuple)
 	delete(IfaceXdpDict, iface)
