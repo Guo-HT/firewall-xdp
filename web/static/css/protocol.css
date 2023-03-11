@@ -1,0 +1,41 @@
+.my-protocol-container {
+    padding-top: 10px;
+}
+
+.protocol_engine_switch_box{
+    width:50px;
+}
+
+.layui-input-inline {
+    margin-right: 20px;
+}
+
+.add-protocol, .reload-protocol {
+    color: #03037e;
+    cursor: pointer;
+    margin-top:5px;
+}
+
+.input-feature-from {
+    padding-top: 20px;
+}
+
+.input-feature-from .protocol-port-range-slider {
+    width: 60%;
+    padding-left: 10%;
+    padding-top: 15px;
+
+}
+
+.input-feature-from .protocol-port-range-label,
+.input-feature-from .protocol-port-range-slider {
+    vertical-align: center;
+}
+
+.port-range-slider {
+    line-height: 100%;
+}
+
+.layui-table tbody tr:hover, .layui-table thead tr, .layui-table-click, .layui-table-header, .layui-table-hover, .layui-table-mend, .layui-table-patch, .layui-table-tool, .layui-table[lay-even] tr:nth-child(even) {
+    background-color: transparent;
+}

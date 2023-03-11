@@ -104,6 +104,28 @@ func StopProtoEngine(c *gin.Context) {
 	return
 }
 
+// GetProtoEngineStatus 获取协议分析引擎开关状态
+func GetProtoEngineStatus(c *gin.Context) {
+	defer func() {
+		if err := recover(); err != nil {
+			errlog.Printf("获取协议分析引擎开关状态, %s", debug.Stack())
+			c.JSON(http.StatusOK, gin.H{
+				"code": 500,
+				"msg":  "服务器内部错误",
+				"data": "",
+			})
+			return
+		}
+	}()
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "获取协议识别引擎状态成功",
+		"data": systemConfig.ProtoEngineStatus,
+	})
+	return
+}
+
 // GetProtoRules 获取协议规则状态
 func GetProtoRules(c *gin.Context) {
 	defer func() {

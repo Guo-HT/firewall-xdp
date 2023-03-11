@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>协议黑名单</title>
+    <script src="/web/static/js/jquery-1.12.4.min.js"></script>
+    <link rel="stylesheet" href="/web/static/layui/css/layui.css">
+    <script src="/web/static/layui/layui.js"></script>
+    <link rel="stylesheet" href="/web/static/css/protocol.css">
+    <link rel="stylesheet" href="/web/static/css/common.css">
+    <script src="/web/static/js/common.js"></script>
+</head>
+<body>
+<div class="layui-row">
+    <span class="layui-breadcrumb my-breadcrumb">
+      <a>防火墙</a>
+      <a>协议黑名单</a>
+    </span>
+
+    <div class="my-protocol-container">
+        <div class="protocol-table-action">
+            <form class="layui-form">
+                <div class="layui-input-inline protocol_engine_switch_box">
+                    <input type="checkbox" id="protocol_engine_switch" name="protocol_engine_switch" lay-skin="switch" lay-filter="protocol_engine_switch" lay-text="ON|OFF">
+                </div>
+
+                <div class="layui-input-inline add-protocol" id="add-protocol">
+                    <i class="layui-icon layui-icon-addition"></i>&nbsp;<span>添加</span>
+                </div>
+
+                <div class="layui-input-inline reload-protocol" id="reload-protocol">
+                    <i class="layui-icon layui-icon-refresh-3"></i>&nbsp;<span>重载规则</span>
+                </div>
+            </form>
+        </div>
+        <table id="protocol_table" lay-filter="protocol_table"></table>
+    </div>
+
+    <form class="layui-form input-feature-from" id="input-feature-from" style="display:none">
+        <table class="layui-table" style="padding:10px;" lay-skin="nob">
+            <colgroup>
+                <col width="35%">
+                <col width="65%">
+            </colgroup>
+            <tbody>
+            <!--      第1行      -->
+            <tr>
+                <td colspan="2">
+                    <label class="layui-form-label">协议名</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="protocol_name" required lay-verify="required" placeholder="请输入协议名"
+                               class="layui-input" id="protocol_name">
+                    </div>
+                </td>
+
+            </tr>
+            <!--      第2行      -->
+            <tr>
+                <td>
+
+                    <label class="layui-form-label">请求类型</label>
+                    <div class="layui-input-block" id="req_type">
+                        <input type="radio" name="req_type" value="string" title="String" >
+                        <input type="radio" name="req_type" value="hex" title="Hex">
+                    </div>
+                </td>
+                <td>
+                    <label class="layui-form-label">请求特征</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="req_reg" required lay-verify="required" placeholder="正则表达式"
+                               class="layui-input" id="req_reg">
+                    </div>
+                </td>
+            </tr>
+            <!--      第3行      -->
+            <tr>
+                <td>
+                    <label class="layui-form-label">响应类型</label>
+                    <div class="layui-input-block" id="rsp_type">
+                        <input type="radio" name="rsp_type" value="string" title="String" >
+                        <input type="radio" name="rsp_type" value="hex" title="Hex">
+                    </div>
+                </td>
+                <td>
+                    <label class="layui-form-label">响应特征</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="rsp_reg" required lay-verify="required" placeholder="正则表达式"
+                               class="layui-input" id="rsp_reg">
+                    </div>
+                </td>
+            </tr>
+            <!--      第4行      -->
+            <tr>
+                <td colspan="2">
+                    <label class="layui-form-label protocol-port-range-label">端口范围</label>
+                    <div class="layui-input-block  protocol-port-range-slider">
+                        <div id="port-range-slider" class="port-range-slider"></div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <button type="reset" class="layui-btn layui-btn-primary" id="protocol_rule_reset" style="display: none;">重置</button>
+    </form>
+</div>
+</body>
+<script type="text/html" id="protocol_opt">
+    <a class="layui-btn layui-btn-xs" lay-event="delete">删除</a>
+</script>
+<script type="text/html" id="protocol_switch">
+    {{#  if(d.is_enable){ }}
+    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.protocol_name}}" value="true" lay-text="ON|OFF"
+           lay-filter="switch" checked>
+    {{#  } else { }}
+    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.protocol_name}}" value="false" lay-text="ON|OFF"
+           lay-filter="switch">
+    {{#  } }}
+</script>
+
+<script type="text/html" id="feature_type">
+    <input type="checkbox" name="feature_type" lay-skin="switch" lay-text="Str|Hex">
+</script>
+
+
+<script src="/web/static/js/protocol.js"></script>
+</html>

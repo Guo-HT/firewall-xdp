@@ -11,8 +11,9 @@ func ProtoApiGroup(router *gin.RouterGroup) {
 	 */
 	ProtoEngineRG := router.Group("/proto")
 	{
-		ProtoEngineRG.POST("/start", controllers.StartProtoEngine) // 开启协议分析
-		ProtoEngineRG.POST("/stop", controllers.StopProtoEngine)   // 关闭协议分析
+		ProtoEngineRG.POST("/start", controllers.StartProtoEngine)     // 开启协议分析
+		ProtoEngineRG.POST("/stop", controllers.StopProtoEngine)       // 关闭协议分析
+		ProtoEngineRG.GET("/status", controllers.GetProtoEngineStatus) // 获取协议分析开关状态
 
 		ProtoEngineRG.GET("/getProtoIpPort", controllers.GetProtoIpPort) // 新增协议规则
 

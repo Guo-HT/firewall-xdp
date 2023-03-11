@@ -2,9 +2,45 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>IP白名单</title>
+    <script src="/web/static/js/jquery-1.12.4.min.js"></script>
+    <link rel="stylesheet" href="/web/static/layui/css/layui.css">
+    <script src="/web/static/layui/layui.js"></script>
+    <link rel="stylesheet" href="/web/static/css/white_ip.css">
+    <link rel="stylesheet" href="/web/static/css/common.css">
+    <script src="/web/static/js/common.js"></script>
+    <script src="/web/static/js/append_netcard.js"></script>
 </head>
 <body>
+<div class="layui-row">
+    <span class="layui-breadcrumb my-breadcrumb">
+      <a>防火墙</a>
+      <a>白名单</a>
+      <a>IP地址</a>
+    </span>
 
+    <div class="my-white-ip-container">
+        <div class="white-ip-table-action">
+            <form class="layui-form">
+                <div class="layui-input-inline">
+                    <select name="netcard" id="netcard-select-input" lay-filter="select_changed">
+                        <!--                        <option value="default">请选择一张网卡</option>-->
+                    </select>
+                </div>
+                <div class="layui-input-inline add-white-ip" id="add-white-ip">
+                    <i class="layui-icon layui-icon-addition"></i>&nbsp;<span>添加</span>
+                </div>
+                <!--                <div class="layui-input-inline add-white-ip">-->
+                <!--                    <i class="layui-icon layui-icon-addition"></i>&nbsp;<span>批量导入</span>-->
+                <!--                </div>-->
+            </form>
+        </div>
+        <table id="white_ip_table" lay-filter="white_ip_table"></table>
+    </div>
+</div>
 </body>
+<script type="text/html"  id="del_btn">
+    <a class="layui-btn layui-btn-xs" lay-event="delete">删除</a>
+</script>
+<script src="/web/static/js/white_ip.js"></script>
 </html>

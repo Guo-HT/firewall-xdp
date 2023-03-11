@@ -1,0 +1,10 @@
+.my-white-ip-container{
+    padding-top: 10px;
+}
+.layui-input-inline{
+    margin-right:20px;
+}
+.add-white-ip{
+    color: #03037e;
+    cursor: pointer;
+}
