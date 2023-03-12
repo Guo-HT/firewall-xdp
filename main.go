@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"os"
 	"strings"
+	_ "xdpEngine/db"
 	"xdpEngine/dpiEngine"
 	"xdpEngine/routers"
 	"xdpEngine/systemConfig"
@@ -36,6 +38,7 @@ func main() {
 	go xdp.ListenExit() // 监听退出信号
 
 	engine := gin.Default()
+	engine.Use(sessions.Sessions(systemConfig.SessionName, systemConfig.SessStore))
 	routers.InitRouters(engine)
 
 	go func() {
