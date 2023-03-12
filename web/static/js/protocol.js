@@ -116,10 +116,10 @@ $(function () {
                 if(msg.code===200){
                     var protocol_status = msg.data
                     if (protocol_status){
-                        console.log("开启")
+                        // console.log("开启")
                         $('#protocol_engine_switch').attr({"checked": 'checked'});
                     }else{
-                        console.log("关闭")
+                        // console.log("关闭")
                         $('#protocol_engine_switch').removeAttr("checked").attr("value", "off")
                     }
                     form.render("checkbox")
@@ -225,12 +225,12 @@ $(function () {
             layer.open({
                 type: 1,
                 area: ['66%', '400px'],
-                title: '请输入一条策略'
-                , content: $("#input-feature-from"),
+                title: '请输入一条策略',
+                content: $("#input-feature-from"),
                 shade: 0,
                 btn: ['提交', '重置']
                 , btn1: function (index, layero) {
-                    console.log("提交")
+                    // console.log("提交")
                     var protocol_name = $("#protocol_name").val()
                     var req_type = $("#req_type input:checked").val()
                     var req_reg = $("#req_reg").val()
@@ -245,7 +245,7 @@ $(function () {
                     ) {
                         layer.msg("请完善信息")
                     } else {
-                        console.log("ok")
+                        // console.log("ok")
                         if (slider_start === undefined || slider_end === undefined) {
                             slider_start = 0
                             slider_end = 65535
@@ -261,7 +261,7 @@ $(function () {
                             "end_port": slider_end,
                             "is_enable": false
                         }
-                        console.log(new_rule)
+                        // console.log(new_rule)
                         $("#protocol_rule_reset").click()
                         $.ajax({
                             url: "/func/proto/addRules",
@@ -287,13 +287,13 @@ $(function () {
 
                 },
                 btn2: function (index, layero) {
-                    console.log("重置")
+                    // console.log("重置")
                     $("#protocol_rule_reset").click()
                     return false
                     // layer.closeAll();
                 },
                 cancel: function (layero, index) {
-                    console.log("cancel")
+                    // console.log("cancel")
                     layer.closeAll();
                 }
             });

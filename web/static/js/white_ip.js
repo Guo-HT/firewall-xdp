@@ -49,7 +49,7 @@ $(function () {
                 },
                 parseData: function (res) { //res 即为原始返回的数据
                     var interface_data = []
-                    console.log(res.data.data)
+                    // console.log(res.data.data)
                     if (res.code === 200) {
                         if (res.data.data === null) {
                             return {
@@ -92,7 +92,7 @@ $(function () {
 
         // 监听select表单变化事件
         form.on("select(select_changed)", function (data) {
-            console.log(data.value)
+            // console.log(data.value)
             render_white_ip_table(data.value)
         })
 

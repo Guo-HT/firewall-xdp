@@ -49,7 +49,7 @@ $(function () {
                 },
                 parseData: function (res) { //res 即为原始返回的数据
                     var interface_data = []
-                    console.log(res.data.data)
+                    // console.log(res.data.data)
                     if (res.code === 200) {
                         if (res.data.data === null) {
                             return {
@@ -92,7 +92,7 @@ $(function () {
 
         // 监听select表单变化事件
         form.on("select(select_changed)", function (data) {
-            console.log(data.value)
+            // console.log(data.value)
             render_white_port_table(data.value)
         })
 
@@ -105,7 +105,7 @@ $(function () {
                 "iface": netcard,
                 "whitePortList": target
             }
-            console.log("删除一个 [黑名单Port]", del_data)
+            // console.log("删除一个 [黑名单Port]", del_data)
             $.ajax({
                 url: "/xdp/white/delPort",
                 type: "post",

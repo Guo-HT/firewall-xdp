@@ -91,3 +91,16 @@ type IpHitCount struct {
 	IP  string `json:"ip"`
 	Hit int    `json:"hit"`
 }
+
+// UserLoginForm 登录时提交数据
+type UserLoginForm struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+// ChangeUserPassword 修改密码时提交数据
+type ChangeUserPassword struct {
+	Username    string `json:"username"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}
