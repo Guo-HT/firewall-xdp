@@ -15,5 +15,6 @@ func IfaceApiGroup(router *gin.RouterGroup) {
 		NetcardEngineRG.POST("/detach", controllers.DetachNewIface)
 		NetcardEngineRG.GET("/getStatus", controllers.EngineStatus)
 		NetcardEngineRG.GET("/getEngineList", controllers.GetEngineList)
+		NetcardEngineRG.GET("/getIfaceList", controllers.GetIfaceList)
 	}
 }

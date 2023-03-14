@@ -3,6 +3,7 @@ package utils
 import (
 	"net"
 	"os/exec"
+	"strings"
 )
 
 func GetLocalIP() (ipList []string) {
@@ -43,4 +44,32 @@ func IsIfaceExist(iface string) (isExist bool) {
 		}
 	}
 	return false
+}
+
+// GetAllNetcard 获取所有网卡
+func GetAllNetcard() (netcardList []NetcardInfo) {
+	interfaces, _ := net.Interfaces()
+	for _, iface := range interfaces {
+		flagRightNetcard := true
+		addrs, _ := iface.Addrs()
+		var addrStr []string
+		for _, addr := range addrs {
+			if strings.Contains(addr.String(), "127.0.0.1") {
+				flagRightNetcard = false
+				break
+			} else {
+				addrStr = append(addrStr, addr.String())
+			}
+		}
+		if flagRightNetcard {
+			netcardList = append(netcardList, NetcardInfo{
+				NetcardName: iface.Name,
+				IP:          addrStr,
+				MAC:         iface.HardwareAddr.String(),
+				Flags:       iface.Flags.String(),
+			})
+		}
+
+	}
+	return
 }

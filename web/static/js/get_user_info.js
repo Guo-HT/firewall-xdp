@@ -9,6 +9,7 @@ function get_user_login_status() {
         // console.log(msg)
         if (msg.code === 200) {
             if (msg.data.loginState === false) {
+                window.parent.location.href = "/login";
                 window.location.href = "/login";
             }
         }

@@ -1,6 +1,9 @@
 package utils
 
-import "github.com/google/gopacket/layers"
+import (
+	"github.com/google/gopacket/layers"
+	"time"
+)
 
 type WhiteIpStruct struct {
 	WhiteIpList []string `json:"whiteIpList"`
@@ -103,4 +106,33 @@ type ChangeUserPassword struct {
 	Username    string `json:"username"`
 	OldPassword string `json:"old_password"`
 	NewPassword string `json:"new_password"`
+}
+
+type NetcardInfo struct {
+	NetcardName string   `json:"netcard_name"`
+	IP          []string `json:"ip"`
+	MAC         string   `json:"mac"`
+	Flags       string   `json:"flags"`
+}
+
+type UserInfo struct {
+	ID       int       `json:"id"`        // ID
+	UserName string    `json:"username"`  // 用户名
+	Email    string    `json:"email"`     // 邮箱
+	Role     int       `json:"role"`      // 用户角色[0-admin; 1-操作员; 2-审计员]
+	CreateAt time.Time `json:"create_at"` // 创建时间
+}
+
+type DelUserCheck struct {
+	Password       string `json:"password"`
+	TargetUserName string `json:"target_user_name"`
+}
+
+// UserAdd 新增用户需要的信息
+type UserAdd struct {
+	CurUserPassword string `json:"cur_user_password"` // 当前操作用户的密码
+	UserName        string `json:"user_name"`         // 用户名
+	Password        string `json:"password"`          // 密码
+	Email           string `json:"email"`             // 邮箱
+	Role            int    `json:"role"`              // 用户角色[0-admin; 1-操作员; 2-访客]
 }

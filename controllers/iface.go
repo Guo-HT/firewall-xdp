@@ -204,3 +204,26 @@ func GetEngineList(c *gin.Context) {
 	return
 
 }
+
+// GetIfaceList http获取所有可用网卡信息
+func GetIfaceList(c *gin.Context) {
+	defer func() {
+		if err := recover(); err != nil {
+			errlog.Printf("GetIfaceList: %s", debug.Stack())
+			c.JSON(http.StatusOK, gin.H{
+				"code": 500,
+				"msg":  "服务器内部错误",
+				"data": []int{},
+			})
+			return
+		}
+	}()
+	logger.Println("正在获取网卡列表")
+	netcardList := utils.GetAllNetcard()
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "获取可用网卡成功",
+		"data": netcardList,
+	})
+	return
+}

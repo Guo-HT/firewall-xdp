@@ -2,14 +2,125 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title></title>
+    <title>系统设置</title>
     <script src="/web/static/js/third_party/jquery-1.12.4.min.js"></script>
     <link rel="stylesheet" href="/web/static/layui/css/layui.css">
     <script src="/web/static/layui/layui.js"></script>
+    <link rel="stylesheet" href="/web/static/css/common.css">
     <script src="/web/static/js/get_user_info.js"></script>
+    <script src="/web/static/js/settings.js"></script>
+    <link rel="stylesheet" href="/web/static/css/settings.css">
 </head>
 <body>
+<div class="layui-row">
+    <span class="layui-breadcrumb my-breadcrumb">
+      <a>防火墙</a>
+      <a>系统设置</a>
+    </span>
+    <div class="layui-tab layui-tab-brief">
+        <ul class="layui-tab-title">
+            <li class="layui-this">用户管理</li>
+            <li>网络配置</li>
+            <!--            <li>test3</li>-->
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <div class="user-table-action">
+                    <form class="layui-form">
 
+                        <div class="layui-input-inline add-user" id="add-user">
+                            <i class="layui-icon layui-icon-addition"></i>&nbsp;<span>添加</span>
+                        </div>
 
+                    </form>
+                </div>
+                <table id="user_table" lay-filter="user_table"></table>
+                <form id="change_password_form" style="display:none;">
+                    <div class="layui-form change-passowrd-box">
+                        <!--        <h1>修改密码</h1>-->
+                        <div class="layui-input-item">
+                            <input type="password" name="old" id="change-password-old" placeholder="请输入旧的密码"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+
+                        <div class="layui-input-item">
+                            <input type="password" name="new" id="change-password-input" placeholder="请输入新的密码"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+
+                        <div class="layui-input-item">
+                            <input type="password" name="new-check" id="change-password-check-input"
+                                   placeholder="请确认新的密码" autocomplete="off" class="layui-input">
+                        </div>
+                        <button type="reset" class="layui-btn layui-btn-primary" id="change-password-reset"
+                                style="display: none;">重置
+                        </button>
+                    </div>
+                </form>
+
+                <form id="del_user_form" style="display:none;">
+                    <div class="layui-form del_user_box">
+                        <!--        <h1>修改密码</h1>-->
+                        <div class="layui-input-item">
+                            <input type="password" name="" id="del_user_input" placeholder="请输入密码"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+
+                        <button type="reset" class="layui-btn layui-btn-primary" id="del_user_reset"
+                                style="display: none;">重置
+                        </button>
+                    </div>
+                </form>
+
+                <form class="layui-form new-user-from" id="new-user-from" style="display:none">
+                    <!-- 当前用户密码 -->
+                    <div class="layui-form-item">
+                        <input type="password" name="cur-pwd" placeholder="请输入当前用户密码" autocomplete="off"
+                               id="cur-pwd" class="layui-input">
+                    </div>
+                    <!-- 新用户名 -->
+                    <div class="layui-form-item">
+                        <input type="text" name="new-username" placeholder="请输入新用户名" autocomplete="off"
+                               id="new-username" class="layui-input">
+                    </div>
+                    <!-- 新用户密码 -->
+                    <div class="layui-form-item">
+                        <input type="password" name="new-pwd" placeholder="请输入密码" autocomplete="off"
+                               id="new-pwd" class="layui-input">
+                    </div>
+                    <!-- 新用户密码确认 -->
+                    <div class="layui-form-item">
+                        <input type="password" name="new-pwd-check" placeholder="请确认密码" autocomplete="off"
+                               id="new-pwd-check" class="layui-input">
+                    </div>
+                    <!-- 新用户邮箱 -->
+                    <div class="layui-form-item">
+                        <input type="email" name="new-email" placeholder="请输入邮箱地址" autocomplete="off"
+                               id="new-email" class="layui-input">
+                    </div>
+                    <!-- 新用户角色 -->
+                    <div class="layui-form-item" id="new-role">
+                        <input type="radio" name="role" value="0" title="管理员">
+                        <input type="radio" name="role" value="1" title="操作员">
+                        <input type="radio" name="role" value="2" title="访客">
+                    </div>
+                    <div class="layui-form-item" style="display:none;">
+                        <div class="layui-input-block">
+                            <button type="reset" class="layui-btn layui-btn-primary" id="add-user-reset">重置</button>
+                        </div>
+                    </div>
+                </form>
+
+                <script type="text/html" id="user_opt">
+                    <button type="button" class="layui-btn layui-btn-xs" lay-event="change_pwd">修改密码</button>
+                    <button type="button" class="layui-btn layui-btn-xs" lay-event="delete">删除</button>
+                </script>
+            </div>
+
+            <div class="layui-tab-item">内容2</div>
+            <!--            <div class="layui-tab-item">test3</div>-->
+        </div>
+    </div>
+</div>
 </body>
 </html>

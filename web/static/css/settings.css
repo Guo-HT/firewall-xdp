@@ -1,0 +1,25 @@
+.layui-tab-item{
+    padding:10px;
+}
+
+.add-user{
+    cursor: pointer;
+}
+
+h1{
+    text-align: center;
+}
+
+.change-passowrd-box, .del_user_box{
+    padding:0 20px;
+}
+
+.change-passowrd-box .layui-input-item,
+.del_user_box .layui-input-item
+{
+    margin: 30px 0;
+}
+
+.new-user-from{
+    padding: 20px;
+}

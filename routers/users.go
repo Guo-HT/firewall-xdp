@@ -16,7 +16,9 @@ func UserOptApiGroup(router *gin.RouterGroup) {
 		UserEngineRG.POST("/logout", controllers.UserLogout)
 		UserEngineRG.GET("/info", controllers.UserInfo)
 		UserEngineRG.POST("/addUser", controllers.AddUser)
+		UserEngineRG.POST("/delUser", controllers.DelUser)
 		UserEngineRG.POST("/changePwd", controllers.ChangePassword)
+		UserEngineRG.GET("/allUser", controllers.GetAllUsers)
 	}
 
 	OptLogRG := router.Group("/log")
