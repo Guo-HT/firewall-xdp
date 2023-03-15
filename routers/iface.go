@@ -17,4 +17,10 @@ func IfaceApiGroup(router *gin.RouterGroup) {
 		NetcardEngineRG.GET("/getEngineList", controllers.GetEngineList)
 		NetcardEngineRG.GET("/getIfaceList", controllers.GetIfaceList)
 	}
+
+	NetcardStatusRG := router.Group("/status")
+	{
+		NetcardStatusRG.POST("/startIface", controllers.StartIface)
+		NetcardStatusRG.POST("/stopIface", controllers.StopIface)
+	}
 }

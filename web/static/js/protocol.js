@@ -86,22 +86,8 @@ $(function () {
                     // {field: 'start_port', title: "端口起始", width: "8%", sort: false, align: "center", toolbar:""},
                     // {field: 'end_port', title: "端口中止", width: "8%", sort: false, align: "center", toolbar:""},
                     {field: 'port_range', title: "端口范围", width: "16%", sort: false, align: "center", toolbar: ""},
-                    {
-                        field: 'is_enable',
-                        title: "启用状态",
-                        width: "10%",
-                        sort: false,
-                        align: "center",
-                        templet: "#protocol_switch"
-                    },
-                    {
-                        field: 'option',
-                        title: "操作",
-                        width: "10%",
-                        sort: false,
-                        align: "center",
-                        toolbar: "#protocol_opt"
-                    },
+                    {field: 'is_enable',title: "启用状态",width: "10%",sort: false,align: "center",templet: "#protocol_switch"},
+                    {field: 'option', title: "操作", width: "10%", sort: false,align: "center",toolbar: "#protocol_opt"},
                 ]],
             })
         }

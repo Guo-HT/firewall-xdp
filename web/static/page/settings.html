@@ -19,12 +19,12 @@
     </span>
     <div class="layui-tab layui-tab-brief">
         <ul class="layui-tab-title">
-            <li class="layui-this">用户管理</li>
-            <li>网络配置</li>
-            <!--            <li>test3</li>-->
+            <li>用户管理</li>
+            <li class="layui-this">网络配置</li>
+            <!--<li>test3</li>-->
         </ul>
         <div class="layui-tab-content">
-            <div class="layui-tab-item layui-show">
+            <div class="layui-tab-item">
                 <div class="user-table-action">
                     <form class="layui-form">
 
@@ -117,8 +117,30 @@
                 </script>
             </div>
 
-            <div class="layui-tab-item">内容2</div>
-            <!--            <div class="layui-tab-item">test3</div>-->
+            <div class="layui-tab-item layui-show">
+                <table id="netcard_table" lay-filter="netcard_table"></table>
+
+                <script type="text/html" id="netcard_switch">
+                    {{#  if(d.is_up){ }}
+                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}" engine="{{d.is_attach}}" ip="{{d.ip_join}}" value="true" lay-text="ON|OFF"
+                           lay-filter="netcard_switch_evt" checked>
+                    {{#  } else { }}
+                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}" engine="{{d.is_attach}}" ip="{{d.ip_join}}" value="false" lay-text="ON|OFF"
+                           lay-filter="netcard_switch_evt">
+                    {{#  } }}
+                </script>
+
+                <script type="text/html" id="engine_table">
+                    {{#  if(d.is_attach){ }}
+                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}"  value="true" lay-text="ON|OFF"
+                           lay-filter="engine_switch_evt" checked>
+                    {{#  } else { }}
+                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}" value="false" lay-text="ON|OFF"
+                           lay-filter="engine_switch_evt">
+                    {{#  } }}
+                </script>
+            </div>
+            <!--<div class="layui-tab-item">test3</div>-->
         </div>
     </div>
 </div>

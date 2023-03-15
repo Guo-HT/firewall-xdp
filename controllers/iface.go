@@ -220,10 +220,89 @@ func GetIfaceList(c *gin.Context) {
 	}()
 	logger.Println("正在获取网卡列表")
 	netcardList := utils.GetAllNetcard()
+	for index, netcard := range netcardList {
+		if _, ok := xdp.IfaceXdpDict[netcard.NetcardName]; ok {
+			// 已挂载引擎
+			netcardList[index].EngineStatus = true
+		} else {
+			netcardList[index].EngineStatus = false
+		}
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "获取可用网卡成功",
 		"data": netcardList,
 	})
 	return
+}
+
+// StartIface up网卡
+func StartIface(c *gin.Context) {
+	defer func() {
+		if err := recover(); err != nil {
+			errlog.Printf("StartIface: %s", debug.Stack())
+			c.JSON(http.StatusOK, gin.H{
+				"code": 500,
+				"msg":  "服务器内部错误",
+				"data": "",
+			})
+			return
+		}
+	}()
+
+	var json utils.IfaceStruct
+	if err := c.ShouldBindJSON(&json); err != nil {
+		errlog.Println("StartIface: 请求参数错误")
+		c.JSON(http.StatusOK, gin.H{
+			"code": 400,
+			"msg":  "请求参数错误," + err.Error(),
+			"data": "",
+		})
+		return
+	} else {
+		logger.Println("正在开启网卡:", json.Iface)
+		utils.UpIfaceState(json.Iface)
+		c.JSON(http.StatusOK, gin.H{
+			"code": 200,
+			"msg":  "网卡开启成功",
+			"data": "",
+		})
+		return
+	}
+}
+
+// StopIface down网卡
+func StopIface(c *gin.Context) {
+	defer func() {
+		if err := recover(); err != nil {
+			errlog.Printf("StopIface: %s", debug.Stack())
+			c.JSON(http.StatusOK, gin.H{
+				"code": 500,
+				"msg":  "服务器内部错误",
+				"data": "",
+			})
+			return
+		}
+	}()
+
+	var json utils.IfaceStruct
+	if err := c.ShouldBindJSON(&json); err != nil {
+		errlog.Println("StopIface: 请求参数错误")
+		c.JSON(http.StatusOK, gin.H{
+			"code": 400,
+			"msg":  "请求参数错误," + err.Error(),
+			"data": "",
+		})
+		return
+	} else {
+		//fmt.Println(c.ClientIP())
+		logger.Println("正在关闭网卡:", json.Iface)
+		utils.DownIfaceState(json.Iface)
+		c.JSON(http.StatusOK, gin.H{
+			"code": 200,
+			"msg":  "网卡关闭成功",
+			"data": "",
+		})
+		return
+	}
 }

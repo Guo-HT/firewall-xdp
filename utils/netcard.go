@@ -35,6 +35,19 @@ func UpIfaceState(Iface string) {
 	}
 }
 
+// DownIfaceState 通过"ifconfig"命令，启用指定网卡
+func DownIfaceState(Iface string) {
+	defer func() {
+		if e := recover(); e != nil {
+			logger.Println("DownIfaceState error:	", e)
+		}
+	}()
+	cmd := exec.Command("ifconfig", Iface, "down")
+	if err := cmd.Start(); err != nil {
+		logger.Println("DownIfaceState in starting xdpEngine error:", err)
+	}
+}
+
 // IsIfaceExist 判断传入参数是否为存在的网卡名
 func IsIfaceExist(iface string) (isExist bool) {
 	interfaces, _ := GetIfaceList()

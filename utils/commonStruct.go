@@ -109,10 +109,11 @@ type ChangeUserPassword struct {
 }
 
 type NetcardInfo struct {
-	NetcardName string   `json:"netcard_name"`
-	IP          []string `json:"ip"`
-	MAC         string   `json:"mac"`
-	Flags       string   `json:"flags"`
+	NetcardName  string   `json:"netcard_name"`
+	IP           []string `json:"ip"`
+	MAC          string   `json:"mac"`
+	Flags        string   `json:"flags"`
+	EngineStatus bool     `json:"engine_status"`
 }
 
 type UserInfo struct {

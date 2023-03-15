@@ -23,3 +23,8 @@ h1{
 .new-user-from{
     padding: 20px;
 }
+
+.layui-badge{
+    font-weight: bold;
+    font-size:14px;
+}

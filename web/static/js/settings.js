@@ -64,7 +64,8 @@ $(function () {
                             "data": interface_data //解析数据列表
                         }
                     }
-                }, cols: [[
+                }
+                , cols: [[
                     {field: 'id', title: 'ID', width: "10%", sort: false, align: "center"},
                     {field: 'username', title: '用户名', width: "20%", sort: false, align: "center"},
                     {field: 'email', title: '邮箱', width: "20%", sort: false, align: "center"},
@@ -150,20 +151,20 @@ $(function () {
                         // console.log("提交")
                         var password = $("#del_user_input").val();
                         $.ajax({
-                            url:"/user/status/delUser",
+                            url: "/user/status/delUser",
                             type: "post",
                             data: JSON.stringify({
                                 "password": password,
                                 "target_user_name": username,
                             })
-                        }).done(function(msg){
-                            if(msg.code===200){
+                        }).done(function (msg) {
+                            if (msg.code === 200) {
                                 render_user_table();
                                 layer.closeAll();
-                            }else{
+                            } else {
                                 layer.msg(msg.msg);
                             }
-                        }).fail(function(e){
+                        }).fail(function (e) {
                             layer.msg("error")
                         })
 
@@ -198,15 +199,15 @@ $(function () {
                     var new_pwd_check = $("#new-pwd-check").val();
                     var new_email = $("#new-email").val();
                     var new_role = parseInt($("#new-role input[type='radio']:checked").val());
-                    console.log(cur_password,new_username,new_pwd,new_pwd_check,new_email,new_role)
-                    if(new_pwd!==new_pwd_check){
+                    console.log(cur_password, new_username, new_pwd, new_pwd_check, new_email, new_role)
+                    if (new_pwd !== new_pwd_check) {
                         layer.msg("校验密码不一致")
                         return
                     }
                     $.ajax({
-                        url:"/user/status/addUser",
-                        type:"post",
-                        data:JSON.stringify({
+                        url: "/user/status/addUser",
+                        type: "post",
+                        data: JSON.stringify({
                             "cur_user_password": cur_password,
                             "user_name": new_username,
                             "password": new_pwd,
@@ -214,14 +215,14 @@ $(function () {
                             "role": new_role,
                         }),
                         dataType: "json"
-                    }).done(function(msg){
-                        if (msg.code===200){
+                    }).done(function (msg) {
+                        if (msg.code === 200) {
                             render_user_table();
                             layer.closeAll();
-                        }else{
+                        } else {
                             layer.msg(msg.msg)
                         }
-                    }).fail(function(e){
+                    }).fail(function (e) {
                         layer.msg("error")
                     })
                 }
@@ -235,6 +236,168 @@ $(function () {
             })
         })
 
+        render_network_table()
+
+        // 渲染网卡状态信息
+        function render_network_table() {
+            table.render({
+                elem: "#netcard_table",
+                url: "/iface/engine/getIfaceList",
+                method: 'get',
+                page: false,
+                parseData: function (res) {
+                    var interface_data = []
+                    if (res.code === 200) {
+                        if (res.data === null || res.data.length === 0) {
+                            return {
+                                "code": res.code === 200 ? 0 : -1,
+                                "msg": res.msg,
+                                "count": 1,
+                                "data": [{
+                                    "netcard_name": "-",
+                                    'ip': "-",
+                                    "mac": "-",
+                                    "flags": "-",
+                                    "is_up": "-",
+                                    "is_attach": "-",
+                                }]
+                            };
+                        }
+                        for (var i = 0; i < res.data.length; i++) {
+                            var ip_html = "";
+                            var ip_join = ""
+                            if (res.data[i].ip !== null ) {
+                                for (var j = 0; j < res.data[i].ip.length; j++) {
+                                    ip_html += ('<span class="layui-badge layui-bg-gray">' + res.data[i].ip[j] + '</span>&nbsp;')
+                                    ip_join += (res.data[i].ip[j]+"|")
+                                }
+                            }else{
+                                ip_html = "-"
+                            }
+                            var flag = res.data[i].flags.split("|")
+                            var flag_html = ""
+                            var is_up  = false;
+                            if (flag !== null ) {
+                                for (var k = 0; k < flag.length; k++) {
+                                    if (flag[k]==="up"){
+                                        is_up = true
+                                    }
+                                    flag_html += ('<span class="layui-badge layui-bg-gray">' + flag[k] + '</span>&nbsp;')
+                                }
+                            }else{
+                                flag_html = "-"
+                            }
+                            interface_data.push({
+                                "netcard_name": res.data[i].netcard_name,
+                                'ip': ip_html,
+                                "mac": '<span class="layui-badge layui-bg-gray">' + res.data[i].mac + '</span>',
+                                "flags": flag_html,
+                                "is_up": is_up,
+                                "is_attach": res.data[i].engine_status,
+                                "ip_join": ip_join,
+                            })
+                        }
+                        return {
+                            "code": res.code === 200 ? 0 : -1,
+                            "msg": res.msg,
+                            "count": res.data.length,
+                            "data": interface_data,
+                        }
+                    }
+                },
+                cols: [[
+                    {field: 'netcard_name', title: '网卡名', width: "10%", sort: false, align: "center"},
+                    {field: 'ip', title: 'IP地址', width: "20%", sort: false, align: "center"},
+                    {field: 'mac', title: 'MAC地址', width: "20%", sort: false, align: "center"},
+                    {field: 'flags', title: '状态', width: "30%", sort: false, align: "center"},
+                    {field: 'engine_opt', title: '挂载引擎', width: "10%", toolbar: "#engine_table", sort: false, align: "center"},
+                    {field: 'netcard_opt', title: '启停网卡', width: "10%", toolbar: "#netcard_switch", sort: false, align: "center"},
+                ]]
+            })
+        }
+
+        // 开/关网卡
+        form.on("switch(netcard_switch_evt)", function(obj){
+            var attr_ip = $(this).attr("ip")
+            if (attr_ip.includes(window.location.hostname)){
+                layer.msg("当前网卡正在为您提供网络服务，无法关闭")
+                render_network_table()
+                return
+            }
+            var load_index = layer.load();
+            var netcard_name = $(this).attr("belong")
+            var engine_status = $(this).attr("engine")
+            var target_status = obj.value
+            console.log("网卡启停", obj, netcard_name, engine_status)
+            if(engine_status==="true" || engine_status===true){
+                layer.msg("引擎正在运行，请写在引擎后关闭网卡！")
+                render_network_table()
+                return
+            }
+            var url = ""
+            if (target_status==="false" || target_status===false){
+                url = "/iface/status/startIface"
+            }else{
+
+                url = "/iface/status/stopIface"
+            }
+
+            $.ajax({
+                url: url,
+                type: "post",
+                data: JSON.stringify({
+                    "iface": netcard_name,
+                }),
+                dataType: "json",
+                async: false,
+            }).done(function(msg){
+                if (msg.code===200){
+
+                }else{
+                    layer.msg(msg.msg)
+                }
+            }).fail(function(e){
+                layer.msg("error")
+            })
+            // form.render("switch")
+            render_network_table()
+            layer.close(load_index);
+        })
+
+        // 挂载/卸载引擎
+        form.on("switch(engine_switch_evt)", function(obj){
+            var load_index = layer.load();
+            console.log("切换引擎", obj, $(this).attr("belong"))
+            var netcard_name = $(this).attr("belong")
+            var target_status = obj.value
+
+            var url = ""
+            if (target_status==="false" || target_status===false){
+                url = "/iface/engine/attach"
+            }else{
+                url = "/iface/engine/detach"
+            }
+            $.ajax({
+                url: url,
+                type: "post",
+                data: JSON.stringify({
+                    "iface": netcard_name,
+                }),
+                dataType: "json",
+                async: false,
+            }).done(function(msg){
+                if (msg.code===200){
+
+                }else{
+                    layer.msg(msg.msg)
+                }
+            }).fail(function(e){
+                layer.msg("error")
+            })
+            // form.render("switch")
+            render_network_table()
+            layer.close(load_index);
+        })
 
     })
 })

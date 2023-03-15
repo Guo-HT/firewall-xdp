@@ -230,6 +230,16 @@ func DetachRestXdp() {
 // DetachXdp 卸载指定网卡上的XDP
 func DetachXdp(iface string) {
 	// ip link set dev ens33 xdp off
+	if _, ok := IfaceXdpDict[iface]; ok {
+		_ = IfaceXdpDict[iface].FunctionSwitchMap.Close()
+		_ = IfaceXdpDict[iface].BlackPortMap.Close()
+		_ = IfaceXdpDict[iface].ProtoDetectMap.Close()
+		_ = IfaceXdpDict[iface].WhiteIpMap.Close()
+		_ = IfaceXdpDict[iface].WhitePortMap.Close()
+		_ = IfaceXdpDict[iface].BlackIpMap.Close()
+		_ = IfaceXdpDict[iface].FirewallProgram.Detach()
+		delete(IfaceXdpDict, iface)
+	}
 	cmd := exec.Command("ip", "link", "set", "dev", iface, "xdp", "off")
 	if err := cmd.Start(); err != nil {
 		logger.Println("DetachRestXdp in starting xdpEngine error:", err)
