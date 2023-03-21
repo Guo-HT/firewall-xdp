@@ -6,9 +6,12 @@ import (
 )
 
 func InitRouters(engine *gin.Engine) {
+	// 模板文件
 	engine.LoadHTMLFiles("web/index.tmpl", "web/login.tmpl")
+	// 静态文件
 	engine.Static("/web/static", "./web/static")
 
+	// 静态文件路由
 	engine.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "web/index.tmpl", gin.H{})
 	})
@@ -16,6 +19,7 @@ func InitRouters(engine *gin.Engine) {
 		c.HTML(http.StatusOK, "web/login.tmpl", gin.H{})
 	})
 
+	/********************** API接口 ************************/
 	XdpApiGroup := engine.Group("/xdp")
 	{
 		BlackApiGroup(XdpApiGroup)
@@ -35,6 +39,11 @@ func InitRouters(engine *gin.Engine) {
 	UserApiGroup := engine.Group("/user")
 	{
 		UserOptApiGroup(UserApiGroup)
+	}
+
+	StatusApiGroup := engine.Group("/status")
+	{
+		EngineStautsApiGroup(StatusApiGroup)
 	}
 
 }

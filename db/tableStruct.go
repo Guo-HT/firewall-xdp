@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+/****************************************************/
+//	添加表后，记得修改init中的迁移、初始化
+/****************************************************/
+
 type User struct {
 	ID                  int            `gorm:"primaryKey;autoIncrement"` // ID
 	UserName            string         `gorm:"unique"`                   // 用户名
@@ -28,4 +32,11 @@ type SystemLog struct {
 	Option    string    // 操作详情
 	OptResult bool      // 操作结果
 	CreateAt  time.Time // 操作事件
+}
+
+type SystemSetting struct {
+	ID      int    `gorm:"primaryKey"`
+	Title   string // 系统名称
+	Icon    string // 系统图标
+	RunTime int64  // 运行时间
 }

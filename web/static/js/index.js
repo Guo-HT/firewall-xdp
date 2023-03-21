@@ -1,4 +1,7 @@
 window.onload = function () {
+    var sys_info = get_system_banner()
+    $("#proj_title").text(sys_info.title)
+
     layui.use(['element', 'jquery', "layer"], function () {
         var element = layui.element;
         var layer = layui.layer;

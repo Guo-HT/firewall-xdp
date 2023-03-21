@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <title>系统设置</title>
     <script src="/web/static/js/third_party/jquery-1.12.4.min.js"></script>
-    <link rel="stylesheet" href="/web/static/layui/css/layui.css">
+    <link href="/web/static/layui/css/layui.css" rel="stylesheet">
     <script src="/web/static/layui/layui.js"></script>
-    <link rel="stylesheet" href="/web/static/css/common.css">
+    <link href="/web/static/css/common.css" rel="stylesheet">
     <script src="/web/static/js/get_user_info.js"></script>
+    <script src="/web/static/js/common.js"></script>
     <script src="/web/static/js/settings.js"></script>
-    <link rel="stylesheet" href="/web/static/css/settings.css">
+    <link href="/web/static/css/settings.css" rel="stylesheet">
 </head>
 <body>
 <div class="layui-row">
@@ -19,12 +20,14 @@
     </span>
     <div class="layui-tab layui-tab-brief">
         <ul class="layui-tab-title">
-            <li>用户管理</li>
-            <li class="layui-this">网络配置</li>
+            <li class="layui-this">用户管理</li>
+            <li>网络配置</li>
+            <li>信息配置</li>
             <!--<li>test3</li>-->
         </ul>
         <div class="layui-tab-content">
-            <div class="layui-tab-item">
+            <!--    用户管理    -->
+            <div class="layui-tab-item layui-show">
                 <div class="user-table-action">
                     <form class="layui-form">
 
@@ -39,21 +42,21 @@
                     <div class="layui-form change-passowrd-box">
                         <!--        <h1>修改密码</h1>-->
                         <div class="layui-input-item">
-                            <input type="password" name="old" id="change-password-old" placeholder="请输入旧的密码"
-                                   autocomplete="off" class="layui-input">
+                            <input autocomplete="off" class="layui-input" id="change-password-old" name="old"
+                                   placeholder="请输入旧的密码" type="password">
                         </div>
 
                         <div class="layui-input-item">
-                            <input type="password" name="new" id="change-password-input" placeholder="请输入新的密码"
-                                   autocomplete="off" class="layui-input">
+                            <input autocomplete="off" class="layui-input" id="change-password-input" name="new"
+                                   placeholder="请输入新的密码" type="password">
                         </div>
 
                         <div class="layui-input-item">
-                            <input type="password" name="new-check" id="change-password-check-input"
-                                   placeholder="请确认新的密码" autocomplete="off" class="layui-input">
+                            <input autocomplete="off" class="layui-input" id="change-password-check-input"
+                                   name="new-check" placeholder="请确认新的密码" type="password">
                         </div>
-                        <button type="reset" class="layui-btn layui-btn-primary" id="change-password-reset"
-                                style="display: none;">重置
+                        <button class="layui-btn layui-btn-primary" id="change-password-reset" style="display: none;"
+                                type="reset">重置
                         </button>
                     </div>
                 </form>
@@ -62,12 +65,12 @@
                     <div class="layui-form del_user_box">
                         <!--        <h1>修改密码</h1>-->
                         <div class="layui-input-item">
-                            <input type="password" name="" id="del_user_input" placeholder="请输入密码"
-                                   autocomplete="off" class="layui-input">
+                            <input autocomplete="off" class="layui-input" id="del_user_input" name=""
+                                   placeholder="请输入密码" type="password">
                         </div>
 
-                        <button type="reset" class="layui-btn layui-btn-primary" id="del_user_reset"
-                                style="display: none;">重置
+                        <button class="layui-btn layui-btn-primary" id="del_user_reset" style="display: none;"
+                                type="reset">重置
                         </button>
                     </div>
                 </form>
@@ -75,70 +78,96 @@
                 <form class="layui-form new-user-from" id="new-user-from" style="display:none">
                     <!-- 当前用户密码 -->
                     <div class="layui-form-item">
-                        <input type="password" name="cur-pwd" placeholder="请输入当前用户密码" autocomplete="off"
-                               id="cur-pwd" class="layui-input">
+                        <input autocomplete="off" class="layui-input" id="cur-pwd" name="cur-pwd"
+                               placeholder="请输入当前用户密码" type="password">
                     </div>
                     <!-- 新用户名 -->
                     <div class="layui-form-item">
-                        <input type="text" name="new-username" placeholder="请输入新用户名" autocomplete="off"
-                               id="new-username" class="layui-input">
+                        <input autocomplete="off" class="layui-input" id="new-username" name="new-username"
+                               placeholder="请输入新用户名" type="text">
                     </div>
                     <!-- 新用户密码 -->
                     <div class="layui-form-item">
-                        <input type="password" name="new-pwd" placeholder="请输入密码" autocomplete="off"
-                               id="new-pwd" class="layui-input">
+                        <input autocomplete="off" class="layui-input" id="new-pwd" name="new-pwd"
+                               placeholder="请输入密码" type="password">
                     </div>
                     <!-- 新用户密码确认 -->
                     <div class="layui-form-item">
-                        <input type="password" name="new-pwd-check" placeholder="请确认密码" autocomplete="off"
-                               id="new-pwd-check" class="layui-input">
+                        <input autocomplete="off" class="layui-input" id="new-pwd-check" name="new-pwd-check"
+                               placeholder="请确认密码" type="password">
                     </div>
                     <!-- 新用户邮箱 -->
                     <div class="layui-form-item">
-                        <input type="email" name="new-email" placeholder="请输入邮箱地址" autocomplete="off"
-                               id="new-email" class="layui-input">
+                        <input autocomplete="off" class="layui-input" id="new-email" name="new-email"
+                               placeholder="请输入邮箱地址" type="email">
                     </div>
                     <!-- 新用户角色 -->
                     <div class="layui-form-item" id="new-role">
-                        <input type="radio" name="role" value="0" title="管理员">
-                        <input type="radio" name="role" value="1" title="操作员">
-                        <input type="radio" name="role" value="2" title="访客">
+                        <input name="role" title="管理员" type="radio" value="0">
+                        <input name="role" title="操作员" type="radio" value="1">
+                        <input name="role" title="访客" type="radio" value="2">
                     </div>
                     <div class="layui-form-item" style="display:none;">
                         <div class="layui-input-block">
-                            <button type="reset" class="layui-btn layui-btn-primary" id="add-user-reset">重置</button>
+                            <button class="layui-btn layui-btn-primary" id="add-user-reset" type="reset">重置</button>
                         </div>
                     </div>
                 </form>
 
-                <script type="text/html" id="user_opt">
+                <script id="user_opt" type="text/html">
                     <button type="button" class="layui-btn layui-btn-xs" lay-event="change_pwd">修改密码</button>
                     <button type="button" class="layui-btn layui-btn-xs" lay-event="delete">删除</button>
                 </script>
             </div>
-
-            <div class="layui-tab-item layui-show">
+            <!--    网络配置    -->
+            <div class="layui-tab-item">
                 <table id="netcard_table" lay-filter="netcard_table"></table>
 
-                <script type="text/html" id="netcard_switch">
+                <script id="netcard_switch" type="text/html">
                     {{#  if(d.is_up){ }}
-                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}" engine="{{d.is_attach}}" ip="{{d.ip_join}}" value="true" lay-text="ON|OFF"
+                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}"
+                           engine="{{d.is_attach}}" ip="{{d.ip_join}}" value="true" lay-text="ON|OFF"
                            lay-filter="netcard_switch_evt" checked>
                     {{#  } else { }}
-                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}" engine="{{d.is_attach}}" ip="{{d.ip_join}}" value="false" lay-text="ON|OFF"
+                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}"
+                           engine="{{d.is_attach}}" ip="{{d.ip_join}}" value="false" lay-text="ON|OFF"
                            lay-filter="netcard_switch_evt">
                     {{#  } }}
                 </script>
 
-                <script type="text/html" id="engine_table">
+                <script id="engine_table" type="text/html">
                     {{#  if(d.is_attach){ }}
-                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}"  value="true" lay-text="ON|OFF"
+                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}" value="true"
+                           lay-text="ON|OFF"
                            lay-filter="engine_switch_evt" checked>
                     {{#  } else { }}
-                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}" value="false" lay-text="ON|OFF"
+                    <input type="checkbox" name="switch" lay-skin="switch" belong="{{d.netcard_name}}" value="false"
+                           lay-text="ON|OFF"
                            lay-filter="engine_switch_evt">
                     {{#  } }}
                 </script>
+            </div>
+            <!--    信息配置    -->
+            <div class="layui-tab-item">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">系统名称</label>
+                    <div class="layui-input-inline sys-title-input">
+                        <input autocomplete="off" class="layui-input" id="sys-title" name="title"
+                               placeholder="请输入系统名称" type="text">
+                    </div>
+                </div>
+                <br>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">系统图标</label>
+                    <button class="layui-btn" id="test1" type="button">
+                        <i class="layui-icon">&#xe67c;</i>上传图片
+                    </button>
+                </div>
+                <br>
+                <div class="layui-form-item">
+                    <label class="layui-form-label"></label>
+                    <button class="layui-btn layui-btn-sm" id="submit_sys_info" type="button">提交</button>
+                </div>
             </div>
             <!--<div class="layui-tab-item">test3</div>-->
         </div>

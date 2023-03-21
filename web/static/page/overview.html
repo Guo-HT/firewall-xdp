@@ -4,11 +4,88 @@
     <meta charset="UTF-8">
     <title>数据概览</title>
     <script src="/web/static/js/third_party/jquery-1.12.4.min.js"></script>
-    <link rel="stylesheet" href="/web/static/layui/css/layui.css">
+    <script src="/web/static/js/third_party/moment.js"></script>
+    <link href="/web/static/layui/css/layui.css" rel="stylesheet">
     <script src="/web/static/layui/layui.js"></script>
     <script src="/web/static/js/get_user_info.js"></script>
+    <script src="/web/static/js/third_party/echarts.min.js"></script>
+    <script src="/web/static/js/overview.js"></script>
+    <link href="/web/static/css/overview.css" rel="stylesheet">
 </head>
 <body>
+
+<div class="layui-row">
+    <!--  2 个 时 钟  -->
+    <div class="layui-col-md3 layui-col-lg3 sys-time-box">
+        <!--    系统时间    -->
+        <div class="white-box-left-top">
+            <div class="layui-col-xs4 layui-col-sm4 layui-col-md4 layui-col-lg4 sys-time-inner-box">
+                <div id="clock" style="width:100%;height:90px;"></div>
+            </div>
+            <div class="layui-col-xs8 layui-col-sm8 layui-col-md8 layui-col-lg8 sys-time-inner-box">
+                <div class="my-card">
+                    <div class="card-content card-up">系统时间:</div>
+                    <div class="card-content card-down" id="system-time">
+                        2023-03-20 00:00:00
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--    运行时间    -->
+        <div class="white-box-left-bottom">
+            <div class="layui-col-xs4 layui-col-sm4 layui-col-md4 layui-col-lg4 sys-time-inner-box">
+                <div id="clock_static" style="width:100%;height:90px;"></div>
+            </div>
+            <div class="layui-col-xs8 layui-col-sm8 layui-col-md8 layui-col-lg8 sys-time-inner-box">
+                <div class="my-card">
+                    <div class="card-content card-up">运行时间:</div>
+                    <div class="card-content card-down" id="running-time">
+                        00时00分00秒
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--  4 个 仪 表 盘  -->
+    <div class="layui-col-md9 layui-col-lg9 sys-status-box">
+        <div class="white-box-right">
+            <!--   CPU    -->
+            <div class="layui-col-xs3 layui-col-sm3 layui-col-md3 layui-col-lg3">
+                <div id="cpu" style="width:100%;height:220px;"></div>
+            </div>
+            <!--   Mem    -->
+            <div class="layui-col-xs3 layui-col-sm3 layui-col-md3 layui-col-lg3">
+                <div id="mem" style="width:100%;height:220px;"></div>
+            </div>
+            <!--   磁盘    -->
+            <div class="layui-col-xs3 layui-col-sm3 layui-col-md3 layui-col-lg3">
+                <div id="disk" style="width:100%;height:220px;"></div>
+            </div>
+            <!--   温度    -->
+            <div class="layui-col-xs3 layui-col-sm3 layui-col-md3 layui-col-lg3">
+                <div id="temp" style="width:100%;height:220px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-col-xs12 layui-col-sm12 layui-col-md12 layui-col-lg12">
+        <div class="white-box-bottom">
+            <div class="layui-card network-status-card">
+                <div class="layui-card-header">网络状态</div>
+                <div class="layui-card-body layui-clear">
+                    <div class="layui-col-md2 layui-col-lg2 layui-col-xs2 layui-col-sm2">
+                        <ul class="net-io-list" id="net-io-list">
+                        </ul>
+                    </div>
+                    <div class="layui-col-md10 layui-col-lg10 layui-col-xs10 layui-col-sm10 speed-chart-box">
+                        <div class="netcard-speed-chart" id="netcard-speed-charts" style="height:calc(100vh - 300px); width:100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 </body>
 </html>

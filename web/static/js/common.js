@@ -48,3 +48,24 @@ function validateIP(ip) {
         return false;
     }
 }
+
+
+function get_system_banner(){
+    var title = "";
+    var icon = "";
+    $.ajax({
+        url:"/status/setting/systemTitle",
+        type:"get",
+        dataType:"json",
+        async: false,
+    }).done(function(msg){
+        if (msg.code===200){
+            title = msg.data.title
+            icon = msg.data.icon
+        }
+    }).fail(function(e){
+        title = null
+        icon = null
+    })
+    return {"title": title, "icon": icon}
+}

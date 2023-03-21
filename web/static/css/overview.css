@@ -1,0 +1,129 @@
+body {
+    background-color: rgb(245, 245,245);
+    /*background-color: rgb(200,200,200);*/
+    padding: 20px;
+    min-width: 1240px;
+}
+
+.sys-time-box, .sys-status-box {
+    /*background-color: #00F7DE;*/
+    box-sizing: border-box;
+    padding: 5px;
+    height: 200px;
+}
+
+.white-box-left-top, .white-box-left-bottom {
+    height: 90px;
+    width: calc(100% - 10px);
+    margin: 5px;
+    background-color: white;
+    border-radius: 2px;
+}
+.white-box-left-top{
+    margin-bottom: 10px;
+}
+.white-box-left-bottom{
+    margin-top: 10px;
+}
+
+.sys-time-inner-box {
+    box-sizing: border-box;
+}
+
+.sys-time-box .my-card {
+    height: 90px;
+}
+
+.sys-time-box .my-card .card-content {
+    height: 45px;
+    padding-left: 5px;
+    box-sizing: border-box;
+}
+
+.sys-time-box .my-card .card-up {
+    padding-top: 25px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.sys-time-box .my-card .card-down {
+    /*font-weight: bold;*/
+    padding-top: 5px;
+    padding-left: 20px;
+}
+
+.sys-status-box {
+    /*background-color: #a0F7DE;*/
+}
+.white-box-right{
+    height: 190px;
+    width: calc(100% - 10px);
+    margin: 5px;
+    background-color: white;
+    border-radius: 2px;
+}
+.white-box-bottom{
+    width:calc(100% - 20px);
+    height:auto;
+    min-height: 300px;
+    margin: 10px;
+    border-radius: 2px;
+    background-color: white;
+}
+
+.network-status-card{
+    height: calc(100% - 110px);
+}
+.network-status-card .layui-card-body{
+    height: auto;
+}
+
+.layui-card-body ul{
+    display: block;
+    width:100%;
+}
+
+.netcard-li{
+    margin:10px 5px 10px 0;
+    padding:5px 0;
+    cursor: pointer;
+}
+.netcard-li:hover{
+    background-color: #E6E7EB;
+}
+.netcard-li .netcard{
+    vertical-align: top;
+    height:48px;
+    display: inline-block;
+    line-height:48px;
+}
+.netcard-icon{
+    display: inline-block;
+}
+.netcard-icon-svg{
+    width:24px;
+    height:48px;
+    background: url("/web/static/images/svg/netcard.svg") no-repeat center / 50%;
+}
+
+.netcard-name{
+    width: calc(100% - 30px);
+    height:24px;
+    line-height:24px;
+    display: inline-block;
+}
+.netcard-rxtx{
+    color: rgba(0,0,0,0.3);
+}
+
+.net-io-list{
+    height:calc(100vh - 300px);
+    /*overflow: auto;*/
+}
+
+.speed-chart-box{
+    padding: 0 5px;
+    border-left: 1px solid rgba(0,0,0,0.3);
+}
+
+
+

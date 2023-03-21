@@ -28,3 +28,11 @@ h1{
 .change-passowrd-box .layui-input-item{
     margin: 30px 0;
 }
+.proj-title{
+    position:fixed;
+    top:10px;
+    left: 24px;
+    color:black;
+    font-weight: 400;
+    font-size:20px;
+}

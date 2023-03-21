@@ -22,5 +22,11 @@
 
 .my-main-iframe{
     width: 100%;
-    height: 80vh;
+    height: calc(100vh - 108px);
+    min-width: 1050px;
+}
+.proj_title{
+    word-wrap:break-word;
+    word-break:normal;
+    /*overflow: hidden;*/
 }

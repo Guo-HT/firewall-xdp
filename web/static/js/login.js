@@ -1,4 +1,7 @@
 $(function () {
+    var sys_info = get_system_banner()
+    $("#proj_title").text(sys_info.title)
+
     layui.use(['form', "layer"], function () {
         var form = layui.form;
         var layer = layui.layer;
@@ -81,5 +84,8 @@ $(function () {
                 layer.msg("error")
             })
         });
+
+
+
     });
 })

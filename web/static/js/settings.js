@@ -1,10 +1,16 @@
 $(function () {
-    layui.use(['element', 'table', "form", "layer", "slider"], function () {
+    var sys_info = get_system_banner()
+
+
+    layui.use(['element', 'table', "form", "layer", "slider", "upload"], function () {
         const element = layui.element;
         const table = layui.table;
         const form = layui.form;
         const layer = layui.layer;
         const slider = layui.slider;
+        const upload = layui.upload;
+
+        $("#sys-title").val(sys_info.title)
 
         render_user_table()
 
@@ -397,6 +403,28 @@ $(function () {
             // form.render("switch")
             render_network_table()
             layer.close(load_index);
+        })
+
+        // 提交系统名称
+        $("#submit_sys_info").click(function(){
+            var sys_title = $("#sys-title").val()
+            $.ajax({
+                url:"/status/setting/systemTitle",
+                type:"post",
+                dataType:"json",
+                data: JSON.stringify({
+                    "title": sys_title,
+                    "icon": "firewall.png"
+                })
+            }).done(function(msg){
+                if (msg.code===200){
+                    window.top.location.reload()
+                }else{
+                    layer.msg(msg.msg)
+                }
+            }).fail(function(e){
+                layer.msg("error")
+            })
         })
 
     })
