@@ -26,7 +26,7 @@ var (
 
 	SessStore             gormsessions.Store
 	SessionName           string = "sessionId"   // session在客户端存储的名称
-	SessionExpireMinute   int    = 5             // session有效期(分钟)
+	SessionExpireMinute   int    = 50000         // session有效期(分钟)
 	SessionKeyUserId      string = "userId"      // 用户ID
 	SessionKeyUserName    string = "userName"    // 用户名
 	SessionKeyUserRole    string = "role"        // 用户角色

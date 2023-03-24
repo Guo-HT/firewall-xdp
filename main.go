@@ -4,6 +4,8 @@ import (
 	"flag"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"strings"
 	_ "xdpEngine/db"
@@ -48,6 +50,12 @@ func main() {
 			os.Exit(-1)
 		}
 	}()
+	if *runMode == "debug" {
+		go func() {
+			systemConfig.Logger.Println("[!] pprof is running on :1889")
+			systemConfig.Logger.Println(http.ListenAndServe("0.0.0.0:1889", nil))
+		}()
+	}
 
 	select {
 	case <-systemConfig.CtrlC:

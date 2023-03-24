@@ -1,0 +1,11 @@
+.log-search-box{
+    display: inline-block;
+    width:30%;
+}
+.sys-log-table-box{
+    width:100%;
+}
+.sys-log-time{
+    display:inline-block;
+    width:15%;
+}

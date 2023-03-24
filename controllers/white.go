@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 	"sort"
 	"strconv"
+	"xdpEngine/db"
 	"xdpEngine/systemConfig"
 	"xdpEngine/utils"
 	"xdpEngine/xdp"
@@ -72,9 +73,11 @@ func GetWhitePort(c *gin.Context) {
 
 // SetWhitePort 配置Port白名单
 func SetWhitePort(c *gin.Context) {
+	username, _ := c.Get("username")
 	defer func() {
 		if e := recover(); e != nil {
 			errlog.Printf("SetWhitePort: %s \n %s", e, debug.Stack())
+			db.SetSystemLog(c.ClientIP(), username.(string), "添加端口白名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 500,
 				"msg":  "服务器内部错误",
@@ -86,6 +89,7 @@ func SetWhitePort(c *gin.Context) {
 	var json utils.WhitePortStruct
 	if err := c.ShouldBindJSON(&json); err != nil {
 		errlog.Println("SetWhitePort: 请求参数错误")
+		db.SetSystemLog(c.ClientIP(), username.(string), "添加端口白名单", false)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 400,
 			"msg":  "请求参数错误",
@@ -101,6 +105,7 @@ func SetWhitePort(c *gin.Context) {
 		err := xdp.InsertWhitePortMap(xdp.IfaceXdpDict[json.Iface].WhitePortList, json.Iface)
 		if err != nil {
 			errlog.Println("InsertWhitePortMap错误,", err.Error())
+			db.SetSystemLog(c.ClientIP(), username.(string), "添加端口白名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 400,
 				"msg":  "Port白名单添加失败",
@@ -108,6 +113,7 @@ func SetWhitePort(c *gin.Context) {
 			})
 			return
 		}
+		db.SetSystemLog(c.ClientIP(), username.(string), "添加端口白名单", true)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 200,
 			"msg":  "Port白名单添加成功",
@@ -119,9 +125,11 @@ func SetWhitePort(c *gin.Context) {
 
 // DelWhitePort 删除Port白名单
 func DelWhitePort(c *gin.Context) {
+	username, _ := c.Get("username")
 	defer func() {
 		if e := recover(); e != nil {
 			errlog.Printf("DelWhitePort: %s \n %s", e, debug.Stack())
+			db.SetSystemLog(c.ClientIP(), username.(string), "删除端口白名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 500,
 				"msg":  "服务器内部错误",
@@ -133,6 +141,7 @@ func DelWhitePort(c *gin.Context) {
 	var json utils.WhitePortStruct
 	if err := c.ShouldBindJSON(&json); err != nil {
 		errlog.Println("DelWhitePort: 请求参数错误")
+		db.SetSystemLog(c.ClientIP(), username.(string), "删除端口白名单", false)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 400,
 			"msg":  "请求参数错误",
@@ -148,6 +157,7 @@ func DelWhitePort(c *gin.Context) {
 		err := xdp.DeleteWhitePortMap(json.WhitePortList, json.Iface)
 		if err != nil {
 			errlog.Println("DeleteWhitePortMap错误,", err.Error())
+			db.SetSystemLog(c.ClientIP(), username.(string), "删除端口白名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 400,
 				"msg":  "Port白名单删除失败",
@@ -155,6 +165,7 @@ func DelWhitePort(c *gin.Context) {
 			})
 			return
 		}
+		db.SetSystemLog(c.ClientIP(), username.(string), "删除端口白名单", true)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 200,
 			"msg":  "Port白名单删除成功",
@@ -225,9 +236,11 @@ func GetWhiteIP(c *gin.Context) {
 
 // SetWhiteIP 配置IP白名单
 func SetWhiteIP(c *gin.Context) {
+	username, _ := c.Get("username")
 	defer func() {
 		if e := recover(); e != nil {
 			errlog.Printf("SetWhiteIP: %s \n %s", e, debug.Stack())
+			db.SetSystemLog(c.ClientIP(), username.(string), "添加IP白名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 500,
 				"msg":  "服务器内部错误",
@@ -239,6 +252,7 @@ func SetWhiteIP(c *gin.Context) {
 	var json utils.WhiteIpStruct
 	if err := c.ShouldBindJSON(&json); err != nil || !utils.IsIpListRight(json.WhiteIpList) {
 		errlog.Println("SetWhiteIP: 请求参数错误")
+		db.SetSystemLog(c.ClientIP(), username.(string), "添加IP白名单", false)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 400,
 			"msg":  "请求参数错误",
@@ -252,6 +266,7 @@ func SetWhiteIP(c *gin.Context) {
 		err := xdp.InsertWhiteIpMap(xdp.IfaceXdpDict[json.Iface].WhiteIpList, json.Iface)
 		if err != nil {
 			errlog.Println("InsertWhiteIpMap错误,", err.Error())
+			db.SetSystemLog(c.ClientIP(), username.(string), "添加IP白名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 400,
 				"msg":  "IP白名单添加失败",
@@ -259,6 +274,7 @@ func SetWhiteIP(c *gin.Context) {
 			})
 			return
 		}
+		db.SetSystemLog(c.ClientIP(), username.(string), "添加IP白名单", true)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 200,
 			"msg":  "IP白名单添加成功",
@@ -270,9 +286,11 @@ func SetWhiteIP(c *gin.Context) {
 
 // DelWhiteIP 删除IP白名单
 func DelWhiteIP(c *gin.Context) {
+	username, _ := c.Get("username")
 	defer func() {
 		if e := recover(); e != nil {
 			errlog.Printf("DelWhiteIP: %s \n %s", e, debug.Stack())
+			db.SetSystemLog(c.ClientIP(), username.(string), "删除IP白名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 500,
 				"msg":  "服务器内部错误",
@@ -283,6 +301,7 @@ func DelWhiteIP(c *gin.Context) {
 	var json utils.WhiteIpStruct
 	if err := c.ShouldBindJSON(&json); err != nil || !utils.IsIpListRight(json.WhiteIpList) {
 		errlog.Println("DelWhiteIP: 请求参数错误")
+		db.SetSystemLog(c.ClientIP(), username.(string), "删除IP白名单", false)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 400,
 			"msg":  "请求参数错误",
@@ -297,6 +316,7 @@ func DelWhiteIP(c *gin.Context) {
 		err := xdp.DeleteWhiteIpMap(json.WhiteIpList, json.Iface)
 		if err != nil {
 			errlog.Println("DeleteWhiteIpMap error: ", err.Error())
+			db.SetSystemLog(c.ClientIP(), username.(string), "删除IP白名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 400,
 				"msg":  "IP白名单删除失败",
@@ -304,6 +324,7 @@ func DelWhiteIP(c *gin.Context) {
 			})
 			return
 		}
+		db.SetSystemLog(c.ClientIP(), username.(string), "删除IP白名单", true)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 200,
 			"msg":  "IP白名单删除成功",

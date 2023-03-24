@@ -116,7 +116,7 @@ body {
 }
 
 .net-io-list{
-    height:calc(100vh - 300px);
+    height:340px;
     /*overflow: auto;*/
 }
 

@@ -1,7 +1,6 @@
 $(function () {
     var sys_info = get_system_banner()
 
-
     layui.use(['element', 'table', "form", "layer", "slider", "upload"], function () {
         const element = layui.element;
         const table = layui.table;

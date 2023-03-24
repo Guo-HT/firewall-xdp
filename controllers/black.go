@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 	"sort"
 	"strconv"
+	"xdpEngine/db"
 	"xdpEngine/utils"
 	"xdpEngine/xdp"
 )
@@ -73,9 +74,11 @@ func GetBlackPort(c *gin.Context) {
 
 // SetBlackPort 配置Port黑名单
 func SetBlackPort(c *gin.Context) {
+	username, _ := c.Get("username")
 	defer func() {
 		if e := recover(); e != nil {
 			errlog.Printf("SetBlackPort: %s", debug.Stack())
+			db.SetSystemLog(c.ClientIP(), username.(string), "添加端口黑名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 500,
 				"msg":  "服务器内部错误",
@@ -83,10 +86,10 @@ func SetBlackPort(c *gin.Context) {
 			})
 		}
 	}()
-
 	var json utils.BlackPortStruct
 	if err := c.ShouldBindJSON(&json); err != nil {
 		errlog.Println("SetBlackPort: 请求参数错误")
+		db.SetSystemLog(c.ClientIP(), username.(string), "添加端口黑名单", false)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 400,
 			"msg":  "请求参数错误," + err.Error(),
@@ -101,6 +104,7 @@ func SetBlackPort(c *gin.Context) {
 		err := xdp.InsertBlackPortMap(xdp.IfaceXdpDict[json.Iface].BlackPortList, json.Iface)
 		if err != nil {
 			errlog.Println("InsertBlackPortMap错误,", err.Error())
+			db.SetSystemLog(c.ClientIP(), username.(string), "添加端口黑名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 400,
 				"msg":  "Port黑名单添加失败",
@@ -108,6 +112,7 @@ func SetBlackPort(c *gin.Context) {
 			})
 			return
 		}
+		db.SetSystemLog(c.ClientIP(), username.(string), "添加端口黑名单", true)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 200,
 			"msg":  "Port黑名单添加成功",
@@ -119,9 +124,11 @@ func SetBlackPort(c *gin.Context) {
 
 // DelBlackPort 删除Port黑名单
 func DelBlackPort(c *gin.Context) {
+	username, _ := c.Get("username")
 	defer func() {
 		if e := recover(); e != nil {
 			errlog.Printf("DelBlackPort: %s", debug.Stack())
+			db.SetSystemLog(c.ClientIP(), username.(string), "删除端口黑名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 500,
 				"msg":  "服务器内部错误",
@@ -133,6 +140,7 @@ func DelBlackPort(c *gin.Context) {
 	var json utils.BlackPortStruct
 	if err := c.ShouldBindJSON(&json); err != nil {
 		errlog.Println("DelBlackPort: 请求参数错误")
+		db.SetSystemLog(c.ClientIP(), username.(string), "删除端口黑名单", false)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 400,
 			"msg":  "请求参数错误," + err.Error(),
@@ -148,6 +156,7 @@ func DelBlackPort(c *gin.Context) {
 		err := xdp.DeleteBlackPortMap(json.BlackPortList, json.Iface)
 		if err != nil {
 			errlog.Println("DeleteBlackPortMap错误,", err.Error())
+			db.SetSystemLog(c.ClientIP(), username.(string), "删除端口黑名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 400,
 				"msg":  "Port黑名单删除失败",
@@ -155,6 +164,7 @@ func DelBlackPort(c *gin.Context) {
 			})
 			return
 		}
+		db.SetSystemLog(c.ClientIP(), username.(string), "删除端口黑名单", true)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 200,
 			"msg":  "Port黑名单删除成功",
@@ -225,9 +235,11 @@ func GetBlackIP(c *gin.Context) {
 
 // SetBlackIP 配置IP黑名单
 func SetBlackIP(c *gin.Context) {
+	username, _ := c.Get("username")
 	defer func() {
 		if e := recover(); e != nil {
 			errlog.Printf("SetBlackIP: %s \n %s", e, debug.Stack())
+			db.SetSystemLog(c.ClientIP(), username.(string), "添加IP黑名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 500,
 				"msg":  "服务器内部错误",
@@ -238,6 +250,7 @@ func SetBlackIP(c *gin.Context) {
 	var json utils.BlackIpStruct
 	if err := c.ShouldBindJSON(&json); err != nil || !utils.IsIpListRight(json.BlackIpList) {
 		errlog.Println("SetBlackIP: 请求参数错误")
+		db.SetSystemLog(c.ClientIP(), username.(string), "添加IP黑名单", false)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 400,
 			"msg":  "请求参数错误",
@@ -251,6 +264,7 @@ func SetBlackIP(c *gin.Context) {
 		err := xdp.InsertBlackIpMap(xdp.IfaceXdpDict[json.Iface].BlackIpList, json.Iface)
 		if err != nil {
 			errlog.Println("InsertBlackIpMap,", err.Error())
+			db.SetSystemLog(c.ClientIP(), username.(string), "添加IP黑名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 400,
 				"msg":  "IP黑名单添加失败",
@@ -258,6 +272,7 @@ func SetBlackIP(c *gin.Context) {
 			})
 			return
 		}
+		db.SetSystemLog(c.ClientIP(), username.(string), "添加IP黑名单", true)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 200,
 			"msg":  "IP黑名单添加成功",
@@ -269,9 +284,11 @@ func SetBlackIP(c *gin.Context) {
 
 // DelBlackIP 获取IP黑名单
 func DelBlackIP(c *gin.Context) {
+	username, _ := c.Get("username")
 	defer func() {
 		if e := recover(); e != nil {
 			errlog.Printf("DelBlackIP: %s \n %s", e, debug.Stack())
+			db.SetSystemLog(c.ClientIP(), username.(string), "删除IP黑名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 500,
 				"msg":  "服务器内部错误",
@@ -283,6 +300,7 @@ func DelBlackIP(c *gin.Context) {
 	var json utils.BlackIpStruct
 	if err := c.ShouldBindJSON(&json); err != nil || !utils.IsIpListRight(json.BlackIpList) {
 		errlog.Println("DelBlackIP: 请求参数错误")
+		db.SetSystemLog(c.ClientIP(), username.(string), "删除IP黑名单", false)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 400,
 			"msg":  "请求参数错误",
@@ -297,6 +315,7 @@ func DelBlackIP(c *gin.Context) {
 		err := xdp.DeleteBlackIpMap(json.BlackIpList, json.Iface)
 		if err != nil {
 			errlog.Println("DeleteBlackIpMap error: ", err.Error())
+			db.SetSystemLog(c.ClientIP(), username.(string), "删除IP黑名单", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 400,
 				"msg":  "IP黑名单删除失败",
@@ -304,6 +323,7 @@ func DelBlackIP(c *gin.Context) {
 			})
 			return
 		}
+		db.SetSystemLog(c.ClientIP(), username.(string), "删除IP黑名单", true)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 200,
 			"msg":  "IP黑名单删除成功",

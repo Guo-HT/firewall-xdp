@@ -20,9 +20,4 @@ func UserOptApiGroup(router *gin.RouterGroup) {
 		UserEngineRG.POST("/changePwd", controllers.ChangePassword)
 		UserEngineRG.GET("/allUser", controllers.GetAllUsers)
 	}
-
-	OptLogRG := router.Group("/log")
-	{
-		OptLogRG.GET("/systemLog", controllers.GetSystemLog)
-	}
 }

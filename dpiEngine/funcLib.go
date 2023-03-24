@@ -14,10 +14,15 @@ func StartProtoEngine() {
 		// 循环开启各个网口的协议分析功能
 		if xdpObj.ProtoSwitch {
 			logger.Printf("正在开启[%s]的分析功能...", iface)
-			go GetPacketFromChannel(iface)
-			go PacketCapture(iface)
+			StartIfaceProtoEngine(iface)
 		}
 	}
+}
+
+func StartIfaceProtoEngine(iface string) {
+	go GetPacketFromChannel(iface)
+	go PacketCapture(iface)
+	go ClearSessionFlowTimer(iface)
 }
 
 // decodePacket 解析报文

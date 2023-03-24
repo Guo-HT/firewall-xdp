@@ -1,6 +1,9 @@
 $(function () {
     layui.use(['layer'], function () {
         var layer = layui.layer;
+        var loading = layer.load(1, {
+            shade: [0.9,'#fff'] //0.1透明度的白色背景
+        });
 
         var is_first_requests = true
         var first_timestamp
@@ -285,13 +288,22 @@ $(function () {
                 data: xAxis_data_init,
                 interval: 5, // 步长
                 min: 0, // 起始
-                max: 60 // 终止
+                max: 60, // 终止
+                nameTextStyle: {
+                    color: "#aaa",
+                    nameLocation: "end",
+                },
             },
             axisLabel: {
                 color: "#7C7D86"
             },
             yAxis: {
-                type: 'value'
+                type: 'value',
+                name: "Kb/s",
+                nameTextStyle: {
+                    color: "#aaa",
+                    nameLocation: "start",
+                },
             },
             series: [
                 {
@@ -386,6 +398,7 @@ $(function () {
                     var time_array, runtime_array
                     if (is_first_requests === true) {
                         // 第一次请求页面
+                        layer.close(loading);
                         first_timestamp = data.server_time
                         first_server_runtime = data.system_runtime
                         // console.log("第一次")

@@ -3,6 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"xdpEngine/controllers"
 )
 
 func InitRouters(engine *gin.Engine) {
@@ -21,17 +22,20 @@ func InitRouters(engine *gin.Engine) {
 
 	/********************** API接口 ************************/
 	XdpApiGroup := engine.Group("/xdp")
+	XdpApiGroup.Use(controllers.LoginRequireMiddleware())
 	{
 		BlackApiGroup(XdpApiGroup)
 		WhiteApiGroup(XdpApiGroup)
 	}
 
 	FuncApiGroup := engine.Group("/func")
+	FuncApiGroup.Use(controllers.LoginRequireMiddleware())
 	{
 		ProtoApiGroup(FuncApiGroup)
 	}
 
 	NetcardApiGroup := engine.Group("/iface")
+	NetcardApiGroup.Use(controllers.LoginRequireMiddleware())
 	{
 		IfaceApiGroup(NetcardApiGroup)
 	}
@@ -42,8 +46,15 @@ func InitRouters(engine *gin.Engine) {
 	}
 
 	StatusApiGroup := engine.Group("/status")
+	//StatusApiGroup.Use(controllers.LoginRequireMiddleware())
 	{
 		EngineStautsApiGroup(StatusApiGroup)
+	}
+
+	LogApiGroup := engine.Group("/log")
+	LogApiGroup.Use(controllers.LoginRequireMiddleware())
+	{
+		SystemLogApiGroup(LogApiGroup)
 	}
 
 }

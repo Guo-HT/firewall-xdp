@@ -44,10 +44,26 @@ func analyse(key utils.FiveTuple, iface string) {
 		}
 		if (key.DstPort > rule.StartPort && key.DstPort < rule.EndPort) || (key.SrcPort > rule.StartPort && key.SrcPort < rule.EndPort) {
 			// 端口符合要求
-			reReq := regexp.MustCompile(rule.ReqRegx)
-			resultReq := reReq.Find(key.Payload)
-			reRsp := regexp.MustCompile(rule.RspRegx)
-			resultRsp := reRsp.Find(key.Payload)
+			var resultReq []byte
+			var resultRsp []byte
+			if rule.ReqType == "string" {
+				reReq := regexp.MustCompile(rule.ReqRegx)
+				resultReq = reReq.Find(key.Payload)
+			} else if rule.ReqType == "hex" {
+				//fmt.Println("HEX")
+				//fmt.Println(key.PayloadHex)
+				//fmt.Println(key.Payload)
+				reReq := regexp.MustCompile(rule.ReqRegx)
+				resultReq = reReq.Find(key.Payload)
+			}
+			if rule.RspType == "string" {
+				reRsp := regexp.MustCompile(rule.RspRegx)
+				resultRsp = reRsp.Find(key.Payload)
+			} else if rule.RspType == "hex" {
+				//fmt.Println(key.PayloadHex)
+				//fmt.Println(key.Payload)
+			}
+
 			if len(resultReq) != 0 {
 				// 请求
 				logger.Printf("[!]识别到%s请求: %s:%d - %s:%d\n", rule.ProtocolName, key.SrcAddr, key.SrcPort, key.DstAddr, key.DstPort)
@@ -59,7 +75,7 @@ func analyse(key utils.FiveTuple, iface string) {
 						xdp.IfaceXdpDict[iface].SessionFlow[target].HitReq = true // 标记请求命中
 						if xdp.IfaceXdpDict[iface].SessionFlow[target].HitReq && xdp.IfaceXdpDict[iface].SessionFlow[target].HitRsp {
 							// 如果请求和响应都命中，更新最近一次命中时间，并下发策略
-							xdp.IfaceXdpDict[iface].SessionFlow[target].UpdateTime = time.Now().UnixNano()
+							xdp.IfaceXdpDict[iface].SessionFlow[target].UpdateTime = time.Now().Unix()
 							logger.Println("开始阻断：", target)
 							xdp.UpdateProtoIpPortMap()
 						}
@@ -86,7 +102,7 @@ func analyse(key utils.FiveTuple, iface string) {
 						xdp.IfaceXdpDict[iface].SessionFlow[target].HitRsp = true // 标记响应命中
 						if xdp.IfaceXdpDict[iface].SessionFlow[target].HitRsp && xdp.IfaceXdpDict[iface].SessionFlow[target].HitReq {
 							// 如果响应和请求都命中，更新最近一次命中时间，并下发策略
-							xdp.IfaceXdpDict[iface].SessionFlow[target].UpdateTime = time.Now().UnixNano()
+							xdp.IfaceXdpDict[iface].SessionFlow[target].UpdateTime = time.Now().Unix()
 							logger.Println("开始阻断：", target)
 							xdp.UpdateProtoIpPortMap()
 						}
@@ -102,6 +118,28 @@ func analyse(key utils.FiveTuple, iface string) {
 					}
 				}
 			}
+		}
+	}
+}
+
+// ClearSessionFlowTimer 定时清空会话流表
+func ClearSessionFlowTimer(iface string) {
+	logger.Printf("[%s] 开始定时清理会话流", iface)
+	ticker := time.NewTicker(time.Second * 10)
+	for {
+		select {
+		case <-ticker.C:
+			for session, sessionObj := range xdp.IfaceXdpDict[iface].SessionFlow {
+				if time.Now().Unix()-sessionObj.UpdateTime > 300 {
+					// 清理超过5分钟没有通信的会话
+					logger.Println("清理会话流: ", sessionObj.ServerAddr, ":", sessionObj.ServerPort)
+					delete(xdp.IfaceXdpDict[iface].SessionFlow, session)
+					xdp.UpdateProtoIpPortMap()
+				}
+			}
+		case <-xdp.IfaceXdpDict[iface].CtxP.Done():
+			logger.Println("退出会话流清理任务")
+			return
 		}
 	}
 }

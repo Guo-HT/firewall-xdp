@@ -62,9 +62,11 @@ func StatusOverview(c *gin.Context) {
 
 // SetSystemBanner 配置系统名称、图标
 func SetSystemBanner(c *gin.Context) {
+	username, _ := c.Get("username")
 	defer func() {
 		if err := recover(); err != nil {
 			errlog.Printf("SetSystemBanner error: %s, %s", err, debug.Stack())
+			db.SetSystemLog(c.ClientIP(), username.(string), "配置系统信息", false)
 			c.JSON(http.StatusOK, gin.H{
 				"code": 500,
 				"msg":  "服务器内部错误",
@@ -77,6 +79,7 @@ func SetSystemBanner(c *gin.Context) {
 	var json utils.SystemSetting
 	if err := c.ShouldBindJSON(&json); err != nil {
 		errlog.Println("SetSystemBanner: 请求参数错误")
+		db.SetSystemLog(c.ClientIP(), username.(string), "配置系统信息", false)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 400,
 			"msg":  "请求参数错误," + err.Error(),
@@ -88,6 +91,7 @@ func SetSystemBanner(c *gin.Context) {
 		if err != nil {
 			panic(err.Error())
 		}
+		db.SetSystemLog(c.ClientIP(), username.(string), "配置系统信息", true)
 		c.JSON(http.StatusOK, gin.H{
 			"code": 200,
 			"msg":  "系统信息配置成功",

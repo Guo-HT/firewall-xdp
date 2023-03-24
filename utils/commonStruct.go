@@ -165,3 +165,12 @@ type SystemSetting struct {
 	Title string `json:"title"` // 系统名称
 	Icon  string `json:"icon"`  // 系统图标
 }
+
+// SystemLogRsp 系统日志响应结构体
+type SystemLogRsp struct {
+	IP        string `json:"ip"`
+	Username  string `json:"username"`
+	Option    string `json:"option"`
+	OptResult bool   `json:"opt_result"`
+	Time      int64  `json:"time"`
+}

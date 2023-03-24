@@ -30,3 +30,14 @@
     word-break:normal;
     /*overflow: hidden;*/
 }
+
+.layui-footer{
+    display:flex;
+    justify-content:  flex-end;
+    flex-wrap: nowrap;
+    color: rgba(0,0,0,0.3)
+}
+.footer-content{
+    width:150px;
+    text-align: right;
+}
